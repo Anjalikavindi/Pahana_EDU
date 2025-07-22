@@ -12,7 +12,7 @@
 		background-color: rgba(255, 255, 255, 0.55); 
 		border: none;
 	}
-	.modal-footer .btn-1:hover{
+	.modal-footer .btn-2:hover{
 		background-color: #d1f5e8;
 		color: #198754;
 	}
@@ -51,7 +51,7 @@
         </div>
         <div class="modal-footer px-3">
           <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-1 btn-success">Update Item</button>
+          <button type="submit" class="btn btn-2 btn-success">Update Item</button>
         </div>
       </form>
     </div>
