@@ -94,24 +94,44 @@
 	        <jsp:include page="AdminHeader.jsp" />
 
 	        <!-- Welcome Message -->
-	        <div class="ps-3 rounded-3 welcome-box" style="background-color: rgba(249, 155, 125, 0.7); margin-top: 100px;">
+	        <div class="ps-3 py-2 rounded-3 welcome-box" style="background-color: rgba(249, 155, 125, 0.7); margin-top: 60px;">
 			  <div class="row align-items-center">
 			    <div class="col-md-6 mb-3 mb-md-0">
 			      <h1 class="h2">Manage Items</h1>
 			      <p class="text-muted">
 			        Here’s a quick overview of your system performance and recent activity.<br>
 			        Use the sidebar to manage customers, items, and billing efficiently.
+			        
 			      </p>
 			      <div class="d-flex align-items-right">
 			        <button class="btn btn-danger me-3" id="openAddItemBtn">Add New Item</button>
 			      </div>
 			    </div>
-			    <div class="col-md-6 text-end" style="margin-top: -150px;">
-			      <img src="<%= request.getContextPath() %>/Images/dashboardimg.png" class="rounded-circle img-fluid" alt="hero image" style="max-width: 75%; height: auto;">
+			    <div class="col-md-6 text-end" style="margin-top: -30px; margin-bottom: 30px;">
+			      <img src="<%= request.getContextPath() %>/Images/books.png" class="img-fluid" alt="hero image" style="max-width: 45%; height: auto;">
 			    </div>
 			  </div>
 			</div>
 	      </div>
+	      
+	      <!-- Search Bar aligned left with colored search icon -->
+			<div class="row mt-5 mb-4 justify-content-end">
+			  <div class="col-md-3">
+			    <div class="input-group">
+			      <span class="input-group-text border-end-0 bg-danger">
+			        <i class="bi bi-search text-white"></i>
+			      </span>
+			      <input
+			        type="text"
+			        id="itemSearchInput"
+			        class="form-control border-start-0"
+			        placeholder="Search by Item Code"
+			        aria-label="Search"
+			      />
+			    </div>
+			  </div>
+			</div>
+
 	      
 	      <!-- Cards Grid -->
 			<div class="row g-4 mt-3">
@@ -301,6 +321,22 @@
       })
       .catch(error => console.error('Error loading modal:', error));
   });
+  
+  
+	//Search functionality by item code
+	  document.getElementById("itemSearchInput").addEventListener("input", function () {
+	    const searchCode = this.value.trim().toLowerCase();
+	
+	    document.querySelectorAll(".card").forEach(card => {
+	      const itemCode = card.querySelector(".card-text").innerText.toLowerCase();
+	      if (itemCode.includes(searchCode)) {
+	        card.closest(".col-lg-3").style.display = "";
+	      } else {
+	        card.closest(".col-lg-3").style.display = "none";
+	      }
+	    });
+	  });
+
   
   
   //View item popup

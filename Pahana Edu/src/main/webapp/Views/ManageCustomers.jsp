@@ -27,11 +27,10 @@
 	.table-wrapper {
 	  border-radius: 15px;
 	  overflow: hidden;
-	  margin-top: 60px;
 	  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 	}
     .table thead th {
-      background-color: #8d97d2;
+      background-color: #DD4A48;
       color: #ffffff;
       
     }
@@ -124,6 +123,26 @@
 			  </div>
 			</div>
 	      </div>
+	      
+	      
+	      <!-- Search Bar to filter customers by Account Number -->
+			<div class="row mt-5 mb-5 justify-content-end">
+			  <div class="col-md-3">
+			    <div class="input-group">
+			      <span class="input-group-text border-end-0 bg-danger">
+			        <i class="bi bi-search text-white"></i>
+			      </span>
+			      <input
+			        type="text"
+			        id="searchAccountInput"
+			        class="form-control border-start-0"
+			        placeholder="Search by Account Number"
+			        aria-label="Search"
+			      />
+			    </div>
+			  </div>
+			</div>		      
+	      
 	      
           <div class="table-responsive table-wrapper">
             <table class="table table-striped mb-0">
@@ -218,6 +237,21 @@
         modal.show();
       })
       .catch(err => console.error('Failed to load modal:', err));
+  });
+  
+  
+  //Search customers
+  document.getElementById('searchAccountInput').addEventListener('input', function () {
+    const searchTerm = this.value.trim().toLowerCase();
+    const rows = document.querySelectorAll('.table tbody tr');
+
+    rows.forEach(row => {
+      const accountCell = row.querySelector('td');
+      if (accountCell) {
+        const accountNo = accountCell.textContent.trim().toLowerCase();
+        row.style.display = accountNo.includes(searchTerm) ? '' : 'none';
+      }
+    });
   });
   
   
