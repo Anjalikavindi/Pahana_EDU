@@ -152,7 +152,7 @@
                   <th>Name</th>
                   <th>Address</th>
                   <th>Contact</th>
-                  <th>Units Consumed</th>
+                  <th>Remaining Units</th>
                   <th>Actions</th>
                 </tr>
               </thead>

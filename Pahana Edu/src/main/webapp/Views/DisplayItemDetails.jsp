@@ -5,6 +5,7 @@
     String price = request.getParameter("price");
     String quantity = request.getParameter("quantity");
     String imagePath = request.getParameter("image");
+    String description = request.getParameter("description");
 %>
 
 <div class="modal fade" id="viewItemModal" tabindex="-1" aria-labelledby="viewItemModalLabel" aria-hidden="true">
@@ -22,6 +23,7 @@
           <h6>Name: <span class="text-muted"><%= name %></span></h6>
           <h6>Price: <span class="text-muted">LKR <%= price %></span></h6>
           <h6>Quantity: <span class="text-muted"><%= quantity %></span></h6>
+          <h6>Description: <span class="text-muted"><%= description %></span></h6> 
         </div>
       </div>
       <div class="modal-footer">

@@ -47,6 +47,10 @@
               <label for="itemQuantity" class="form-label">Quantity</label>
               <input type="number" class="form-control" id="itemQuantity" name="quantity" value="<%= quantity %>" required>
             </div>
+            <div class="mb-3">
+			  <label for="itemDescription" class="form-label">Description</label>
+			  <textarea class="form-control" id="itemDescription" name="description" rows="3" placeholder="Enter item description..."></textarea>
+			</div>
           </div>
         </div>
         <div class="modal-footer px-3">

@@ -67,14 +67,19 @@
             </div>
           </div>
           
-          <div class="mb-3">
-            <label for="address" class="form-label">Address</label>
-            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+           <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
           </div>
           
           <div class="mb-3">
             <label for="contact" class="form-label">Contact Number</label>
             <input type="tel" class="form-control" id="contact" name="contact" required pattern="[0-9]{10}">
+          </div>
+          
+          <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
           </div>
           
         </div>

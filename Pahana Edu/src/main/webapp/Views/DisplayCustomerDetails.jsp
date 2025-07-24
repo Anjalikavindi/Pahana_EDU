@@ -5,6 +5,7 @@
     String address = request.getParameter("address");
     String contact = request.getParameter("contact");
     String units = request.getParameter("units");
+    String email = request.getParameter("email");
 %>
 
 <!-- Customer Details Modal -->
@@ -23,15 +24,19 @@
 
           <dt class="col-sm-4">Name</dt>
           <dd class="col-sm-8"><%= name %></dd>
+          
+          <dt class="col-sm-4">Remaining Units</dt>
+          <dd class="col-sm-8"><%= units %></dd>
+          
+          <dt class="col-sm-4">Email</dt>
+          <dd class="col-sm-8"><%= email %></dd>
+          
+          <dt class="col-sm-4">Contact</dt>
+          <dd class="col-sm-8"><%= contact %></dd>
 
           <dt class="col-sm-4">Address</dt>
           <dd class="col-sm-8"><%= address %></dd>
 
-          <dt class="col-sm-4">Contact</dt>
-          <dd class="col-sm-8"><%= contact %></dd>
-
-          <dt class="col-sm-4">Units Consumed</dt>
-          <dd class="col-sm-8"><%= units %></dd>
         </dl>
       </div>
     </div>

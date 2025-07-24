@@ -18,7 +18,7 @@
     String name = request.getParameter("name");
     String address = request.getParameter("address");
     String contact = request.getParameter("contact");
-    String units = request.getParameter("units");
+    String email = request.getParameter("email");
 %>
 
 <!-- Update Customer Modal -->
@@ -41,16 +41,16 @@
             <input type="text" class="form-control" id="name" name="name" value="<%= name %>" required>
           </div>
           <div class="mb-3">
-            <label for="address" class="form-label">Address</label>
-            <textarea class="form-control" id="address" name="address" rows="2" required><%= address %></textarea>
-          </div>
-          <div class="mb-3">
             <label for="contact" class="form-label">Contact</label>
             <input type="text" class="form-control" id="contact" name="contact" value="<%= contact %>" required>
           </div>
           <div class="mb-3">
-            <label for="units" class="form-label">Units Consumed</label>
-            <input type="number" class="form-control" id="units" name="units" value="<%= units %>" required>
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" value="<%= email %>" required>
+          </div>
+          <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <textarea class="form-control" id="address" name="address" rows="2" required><%= address %></textarea>
           </div>
         </div>
         <div class="modal-footer px-4">

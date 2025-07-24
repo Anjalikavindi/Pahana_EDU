@@ -66,6 +66,11 @@
             <label for="quantity" class="form-label">Quantity</label>
             <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
           </div>
+          
+          <div class="col-12">
+		    <label for="description" class="form-label">Description</label>
+		    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter item description..."></textarea>
+		  </div>
         </div>
 
         <div class="modal-footer">
