@@ -6,6 +6,7 @@
     String contact = request.getParameter("contact");
     String units = request.getParameter("units");
     String email = request.getParameter("email");
+    String regDate = request.getParameter("regDate");
 %>
 
 <!-- Customer Details Modal -->
@@ -27,6 +28,9 @@
           
           <dt class="col-sm-4">Remaining Units</dt>
           <dd class="col-sm-8"><%= units %></dd>
+          
+          <dt class="col-sm-4">Registration Date</dt>
+          <dd class="col-sm-8"><%= regDate %></dd> 
           
           <dt class="col-sm-4">Email</dt>
           <dd class="col-sm-8"><%= email %></dd>
