@@ -61,7 +61,7 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link <%= request.getRequestURI().contains("CalculateBill.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/CalculateBill.jsp">
+      <a class="nav-link <%= request.getRequestURI().contains("Bill.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/Bill.jsp">
         <i class="bi bi-calculator-fill"></i>
       </a>
     </li>
