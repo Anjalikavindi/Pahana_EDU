@@ -66,17 +66,22 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link <%= request.getRequestURI().contains("ManageItems.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/ManageItems.jsp">
-        <i class="bi bi-file-earmark-plus-fill"></i>
-      </a>
-    </li>
-    <li class="nav-item">
       <a class="nav-link <%= request.getRequestURI().contains("ManageCustomers.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/ManageCustomers.jsp">
         <i class="bi bi-person-fill-gear"></i>
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link <%= request.getRequestURI().contains("AdminHelp.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/AdminHelp.jsp">
+      <a class="nav-link <%= request.getRequestURI().contains("ManageItems.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/ManageItems.jsp">
+        <i class="bi bi-file-earmark-plus-fill"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= request.getRequestURI().contains("ManageEmployees.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/ManageEmployees.jsp">
+        <i class="bi bi-person-lines-fill"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= request.getRequestURI().contains("Help.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/Help.jsp">
         <i class="bi bi-info-circle-fill"></i>
       </a>
     </li>
