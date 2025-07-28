@@ -61,7 +61,7 @@
 			        Use the sidebar to manage customers, items, and billing efficiently.
 			      </p>
 			      <div class="d-flex align-items-right">
-			        <button class="btn btn-danger me-3">Calculate Bill</button>
+			        <button class="btn btn-danger me-3" onclick="window.location.href='<%= request.getContextPath() %>/Views/Bill.jsp'">Calculate Bill</button>
 			      </div>
 			    </div>
 			    <div class="col-md-6 text-end" style="margin-top: -100px;">
