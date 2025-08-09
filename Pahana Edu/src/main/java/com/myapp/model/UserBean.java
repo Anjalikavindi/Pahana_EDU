@@ -1,6 +1,5 @@
 package com.myapp.model;
 
-import java.sql.Timestamp;
 
 public class UserBean {
 
@@ -11,10 +10,14 @@ public class UserBean {
     private int roleId;
     private String status;
     private String image;
-    private Timestamp createdAt;
     private RoleBean role;
     
-    
+	public RoleBean getRole() {
+		return role;
+	}
+	public void setRole(RoleBean role) {
+		this.role = role;
+	}
 	public int getUserId() {
 		return userId;
 	}
@@ -56,20 +59,7 @@ public class UserBean {
 	}
 	public void setImage(String image) {
 		this.image = image;
-	}
-	public Timestamp getCreatedAt() {
-		return createdAt;
-	}
-	public void setCreatedAt(Timestamp createdAt) {
-		this.createdAt = createdAt;
-	}
-	public RoleBean getRole() {
-		return role;
-	}
-	public void setRole(RoleBean role) {
-		this.role = role;
-	}
-    
+	}    
     
 
 }

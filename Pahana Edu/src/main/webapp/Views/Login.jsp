@@ -129,21 +129,26 @@
       <div class="login-form">
         <h2>WELCOME</h2>
 
-        <form>
-          <div class="my-5">
-            <label for="username" class="form-label fs-5">Username</label>
-            <input type="text" class="form-control" name="username" id="username">
-          </div>
+        <form action="${pageContext.request.contextPath}/LoginServlet" method="post">
+		    <div class="my-5">
+		        <label for="username" class="form-label fs-5">Username</label>
+		        <input type="text" class="form-control" name="username" id="username" required>
+		    </div>
+		
+		    <div class="mb-3">
+		        <label for="password" class="form-label fs-5">Password</label>
+		        <input type="password" class="form-control" name="password" id="password" required>
+		    </div>
+		
+		    <span class="forgot-password">Forgot Password?</span>
+		
+		    <button type="submit" class="btn btn-login mt-4">LOGIN</button>
+		
+		    <p style="color:red;">
+		        ${errorMessage}
+		    </p>
+		</form>
 
-          <div class="mb-3">
-            <label for="password" class="form-label fs-5">Password</label>
-            <input type="password" class="form-control" name="password" id="password">
-          </div>
-
-          <span class="forgot-password">Forgot Password?</span>
-
-          <button type="submit" class="btn btn-login mt-4">LOGIN</button>
-        </form>
       </div>
     </div>
 

@@ -1,5 +1,6 @@
 <!-- File: addemployee.jsp -->
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <style>
   .modal-content {
@@ -67,11 +68,11 @@
           <div class="mb-3">
             <label for="role" class="form-label">Role</label>
             <select class="form-control" id="role" name="role" required>
-              <option value="">-- Select Role --</option>
-              <option value="admin">Admin</option>
-              <option value="staff">Staff</option>
-              <option value="manager">Manager</option>
-            </select>
+			    <option value="">-- Select Role --</option>
+			    <c:forEach var="role" items="${roleList}">
+			        <option value="${role}">${role}</option>
+			    </c:forEach>
+			</select>
           </div>
 
           <!-- Image Upload Field -->

@@ -1,6 +1,5 @@
 package com.myapp.model;
 
-import java.sql.Timestamp;
 
 public class RoleBean {
 
@@ -8,7 +7,6 @@ public class RoleBean {
     private String roleName;
     private String permissions;
     private String description;
-    private Timestamp createdAt;
     
     
 	public int getRoleId() {
@@ -34,12 +32,6 @@ public class RoleBean {
 	}
 	public void setDescription(String description) {
 		this.description = description;
-	}
-	public Timestamp getCreatedAt() {
-		return createdAt;
-	}
-	public void setCreatedAt(Timestamp createdAt) {
-		this.createdAt = createdAt;
 	}
     
     
