@@ -91,7 +91,7 @@
 	      <div class="d-flex flex-column pb-2 mb-3">
 
 	        <!-- Include Admin Header -->
-	        <jsp:include page="AdminHeader.jsp" />
+	        <jsp:include page="Header.jsp" />
 
 	        <!-- Welcome Message -->
 	        <div class="ps-3 py-2 rounded-3 welcome-box" style="background-color: rgba(249, 155, 125, 0.7); margin-top: 60px;">

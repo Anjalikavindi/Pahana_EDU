@@ -56,7 +56,7 @@
 <nav class="sidebar">
   <ul class="nav flex-column text-center w-100">
     <li class="nav-item">
-      <a class="nav-link <%= request.getRequestURI().contains("AdminDashboard.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/AdminDashboard.jsp">
+      <a class="nav-link <%= request.getRequestURI().contains("Dashboard.jsp") ? "active" : "" %>" href="<%= request.getContextPath() %>/Views/Dashboard.jsp">
         <i class="bi bi-house-door-fill"></i>
       </a>
     </li>

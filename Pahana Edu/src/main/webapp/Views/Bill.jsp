@@ -65,7 +65,7 @@
     <main class="content">
     
       <!-- Include Admin Header -->
-      <jsp:include page="AdminHeader.jsp" />
+      <jsp:include page="Header.jsp" />
       
       <div class="billing-card mt-5">
         <h3 class="mb-4 text-center">Billing Form</h3>

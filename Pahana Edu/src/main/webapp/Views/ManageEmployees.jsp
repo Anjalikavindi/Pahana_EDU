@@ -107,7 +107,7 @@
   <div class="row">
     <main class="content" style="margin-left: 90px; width: calc(100% - 90px);">
       <div class="d-flex flex-column pb-2 mb-3">
-        <jsp:include page="AdminHeader.jsp" />
+        <jsp:include page="Header.jsp" />
 
         <!-- Welcome Message -->
         <div class="ps-3 rounded-3 welcome-box" style="background-color: rgba(249, 155, 125, 0.7); margin-top: 100px;">

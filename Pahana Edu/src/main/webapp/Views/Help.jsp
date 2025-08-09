@@ -53,7 +53,7 @@
 
     <main class="content" style="margin-left: 90px; width: calc(100% - 90px);">
       <div class="d-flex flex-column pb-5 mb-5">
-        <jsp:include page="AdminHeader.jsp" />
+        <jsp:include page="Header.jsp" />
       </div>
 
       <div class="accordion mt-5" id="helpSection">
