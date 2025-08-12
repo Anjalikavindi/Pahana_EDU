@@ -33,14 +33,14 @@
     <!-- Dropdown menu -->
     <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-1 bg-dark">
       <li>
-        <a class="dropdown-item text-light" href="<%= request.getContextPath() %>/Logout.jsp">
+        <a class="dropdown-item text-light" href="<%= request.getContextPath() %>/Profile.jsp">
           <i class="bi bi-person me-2"></i> Profile
         </a>
       </li>
       <li>
-        <a class="dropdown-item text-light" href="<%= request.getContextPath() %>/Logout.jsp">
-          <i class="bi bi-box-arrow-right me-2"></i> Logout
-        </a>
+        <a class="dropdown-item text-light" href="<%= request.getContextPath() %>/LogoutServlet">
+	      <i class="bi bi-box-arrow-right me-2"></i> Logout
+	    </a>
       </li>
     </ul>
   </div>
