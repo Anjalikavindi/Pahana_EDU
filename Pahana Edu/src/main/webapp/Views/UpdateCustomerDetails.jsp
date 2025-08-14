@@ -1,5 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
+<%
+    String accountNo = request.getParameter("accountNo");
+    String name = request.getParameter("name");
+    String address = request.getParameter("address");
+    String contact = request.getParameter("contact");
+    String email = request.getParameter("email");
+%>
+
 <style>
 	.modal-body input.form-control,
 	.modal-body textarea.form-control {
@@ -12,15 +20,6 @@
 	}
 </style>
 
-
-<%
-    String accountNo = request.getParameter("accountNo");
-    String name = request.getParameter("name");
-    String address = request.getParameter("address");
-    String contact = request.getParameter("contact");
-    String email = request.getParameter("email");
-%>
-
 <!-- Update Customer Modal -->
 <div class="modal fade" id="updateCustomerModal" tabindex="-1" aria-labelledby="updateCustomerModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -30,7 +29,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       
-      <form id="updateCustomerForm">
+      <form id="updateCustomerForm" action="<%= request.getContextPath() %>/UpdateCustomerServlet" method="post">
         <div class="modal-body px-4">
           <div class="mb-3">
             <label for="accountNo" class="form-label">Account Number</label>
@@ -64,24 +63,47 @@
 
 <!-- Optional JS for handling form submission (can be moved to main page if needed) -->
 <script>
-  document.getElementById('updateCustomerForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('updateCustomerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
 
-    const formData = new FormData(this);
+      const formData = new FormData(this);
 
-    // Example: send updated data to servlet (replace URL accordingly)
-    fetch('<%= request.getContextPath() %>/UpdateCustomerServlet', {
-      method: 'POST',
-      body: formData
-    })
-    .then(res => {
-      if (res.ok) {
-        alert('Customer updated successfully!');
-        location.reload(); // reload ManageCustomers.jsp
-      } else {
-        alert('Failed to update customer.');
+      // Debug: Log form data
+      console.log('Form data being sent:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
       }
-    })
-    .catch(err => console.error('Update error:', err));
+
+      fetch(this.action, {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => {
+        console.log('Response status:', res.status);
+        if (res.ok) {
+          return res.text().then(text => {
+            console.log('Success response:', text);
+            alert('Customer updated successfully!');
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('updateCustomerModal'));
+            if (modal) {
+              modal.hide();
+            }
+            // Reload the page to show updated data
+            location.reload();
+          });
+        } else {
+          return res.text().then(text => {
+            console.log('Error response:', text);
+            alert('Failed to update customer: ' + text);
+          });
+        }
+      })
+      .catch(err => {
+        console.error('Update error:', err);
+        alert('Error occurred while updating customer.');
+      });
+    });
   });
 </script>

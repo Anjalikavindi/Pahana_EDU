@@ -1,5 +1,26 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="com.myapp.dao.UserDAO" %>
+<%@ page import="com.myapp.model.UserBean" %>
 <%@ include file="Sidebar.jsp" %>
+
+<%
+    // Fetch all users from database with error handling
+    List<UserBean> users = new ArrayList<>();
+    String errorMessage = null;
+    try {
+        UserDAO userDAO = new UserDAO();
+        users = userDAO.getAllUsers();
+        if (users == null) {
+            users = new ArrayList<>();
+        }
+    } catch (Exception e) {
+        errorMessage = "Error loading users: " + e.getMessage();
+        e.printStackTrace();
+        users = new ArrayList<>();
+    }
+%>
 
 <!DOCTYPE html>
 <html>
@@ -115,7 +136,7 @@
             <div class="col-md-6 mb-3 mb-md-0">
               <h1 class="h2">Manage Employees</h1>
               <p class="text-muted">
-                Here’s a quick overview of your system performance and recent activity.<br>
+                Here's a quick overview of your system performance and recent activity.<br>
 			    Use the sidebar to manage customers, items, and billing efficiently.
               </p>
               <button class="btn btn-danger me-3" id="openAddEmployeeBtn">Add Employee</button>
@@ -125,6 +146,13 @@
             </div>
           </div>
         </div>
+        
+        <!-- Error Message Display -->
+        <% if (errorMessage != null) { %>
+        <div class="alert alert-danger mt-3" role="alert">
+          <i class="bi bi-exclamation-triangle"></i> <%= errorMessage %>
+        </div>
+        <% } %>
       </div>
       
 
@@ -157,63 +185,67 @@
               <th>ID</th>
               <th>Image</th>
               <th>Username</th>
+              <th>Full Name</th>
               <th>Role</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <!-- Sample Static Rows - Replace with dynamic content -->
+            <%
+              if (users != null && !users.isEmpty()) {
+                for (UserBean user : users) {
+                  // Debug logging for user data
+                  System.out.println("JSP Debug - User ID: " + user.getUserId() + ", Username: " + user.getUsername());
+            %>
             <tr>
-              <td>EMP001</td>
+              <td><%= user.getUserId() %></td>
               <td>
-			      <%
-			        String emp1Img = ""; // Example: image exists
-			        if (emp1Img != null && !emp1Img.trim().isEmpty()) {
-			      %>
-			        <img src="<%= request.getContextPath() %>/<%= emp1Img %>" class="emp-img" alt="emp1">
-			      <%
-			        } else {
-			      %>
-			        <i class="bi bi-person-circle fs-2 text-secondary"></i>
-			      <%
-			        }
-			      %>
-			  </td>
-              <td>johndoe</td>
-              <td>Admin</td>
+                <%
+                  String userImg = user.getImage();
+                  if (userImg != null && !userImg.trim().isEmpty()) {
+                %>
+                  <img src="<%= request.getContextPath() %>/<%= userImg %>" class="emp-img" alt="<%= user.getUsername() %>">
+                <%
+                  } else {
+                %>
+                  <i class="bi bi-person-circle fs-2 text-secondary"></i>
+                <%
+                  }
+                %>
+              </td>
+              <td><%= user.getUsername() %></td>
+              <td><%= user.getFullName() != null ? user.getFullName() : "N/A" %></td>
+              <td><%= user.getRole() != null ? user.getRole().getRoleName() : "Unknown" %></td>
               <td>
                 <label class="toggle-switch">
-                  <input type="checkbox" checked onchange="toggleStatus('EMP001')">
+                  <input type="checkbox" <%= "active".equalsIgnoreCase(user.getStatus()) ? "checked" : "" %> 
+                         onchange="toggleStatus('<%= user.getUserId() %>')">
                   <span class="toggle-slider"></span>
                 </label>
               </td>
-            </tr>
-            <tr>
-              <td>EMP002</td>
               <td>
-			      <%
-			        String emp2Img = ""; // Simulate no image
-			        if (emp2Img != null && !emp2Img.trim().isEmpty()) {
-			      %>
-			        <img src="<%= request.getContextPath() %>/<%= emp2Img %>" class="emp-img" alt="emp2">
-			      <%
-			        } else {
-			      %>
-			        <i class="bi bi-person-circle fs-2 text-secondary"></i>
-			      <%
-			        }
-			      %>
-			  </td>
-              <td>janesmith</td>
-              <td>Staff</td>
-              <td>
-                <label class="toggle-switch">
-                  <input type="checkbox" onchange="toggleStatus('EMP002')">
-                  <span class="toggle-slider"></span>
-                </label>
+                <!-- Action buttons (Edit, Delete) -->
+                <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-sm btn-primary" onclick="editUser('<%= user.getUserId() %>')">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                  <button type="button" class="btn btn-sm btn-danger" onclick="deleteUser('<%= user.getUserId() %>')" data-user-id="<%= user.getUserId() %>">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </div>
               </td>
             </tr>
-            <!-- More dynamic rows here -->
+            <%
+                }
+              } else {
+            %>
+            <tr>
+              <td colspan="7" class="text-center text-muted">No users found</td>
+            </tr>
+            <%
+              }
+            %>
           </tbody>
         </table>
       </div>
@@ -228,6 +260,17 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+  // Debug: Check user IDs when page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, checking user IDs in table...');
+    const deleteButtons = document.querySelectorAll('button[data-user-id]');
+    console.log('Found', deleteButtons.length, 'delete buttons');
+    deleteButtons.forEach((btn, index) => {
+      const userId = btn.getAttribute('data-user-id');
+      console.log('Delete button ' + (index + 1) + ': userId = \'' + userId + '\' (type: ' + typeof userId + ')');
+    });
+  });
+  
   document.getElementById('openAddEmployeeBtn').addEventListener('click', function () {
     fetch('<%= request.getContextPath() %>/Views/AddEmployee.jsp')
       .then(response => response.text())
@@ -239,10 +282,116 @@
       .catch(err => console.error('Failed to load modal:', err));
   });
 
-  function toggleStatus(empId) {
+  // Add the handleAddEmployee function globally so it's accessible when modal is loaded
+  function handleAddEmployee(event) {
+    if (event) event.preventDefault();
+    
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    // Validate passwords
+    if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long!');
+        return false;
+    }
+    
+    // Disable submit button to prevent double submission
+    const submitBtn = document.getElementById('addEmployeeBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
+    
+    // Send AJAX request to SaveEmployeeServlet instead
+    fetch('<%= request.getContextPath() %>/SaveEmployeeServlet', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: 'username=' + document.getElementById('username').value +
+        '&fullName=' + document.getElementById('fullName').value +
+        '&password=' + password +
+        '&confirmPassword=' + password +
+        '&role=' + document.getElementById('roleId').options[document.getElementById('roleId').selectedIndex].text
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error('HTTP error! status: ' + response.status);
+        }
+        
+        return response.text(); // Get as text first to see what we're receiving
+    })
+    .then(text => {
+        console.log('Response text:', text);
+        
+        try {
+            const data = JSON.parse(text);
+            if (data.success) {
+                alert('Employee added successfully!');
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal'));
+                if (modal) modal.hide();
+                // Refresh the page to show the new employee
+                location.reload();
+            } else {
+                alert('Failed to add employee: ' + data.message);
+            }
+        } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            console.error('Response was:', text);
+            alert('Error: Invalid response from server');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error details:', error);
+        alert('Error adding employee: ' + error.message + '. Please check the console for details.');
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Employee';
+    });
+    
+    return false;
+  }
+
+  function toggleStatus(userId) {
     const isActive = event.target.checked;
-    console.log(`Toggled employee ${empId} to ${isActive ? 'Active' : 'Inactive'}`);
-    // TODO: Add AJAX request to update status in DB
+    const status = isActive ? 'active' : 'inactive';
+    
+    // Send AJAX request to update user status
+    fetch('<%= request.getContextPath() %>/UserManagementServlet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'action=updateStatus&userId=' + userId + '&status=' + status
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log('User ' + userId + ' status updated to ' + status);
+        // Optionally show a success message
+      } else {
+        console.error('Failed to update user status:', data.message);
+        // Revert the toggle if update failed
+        event.target.checked = !isActive;
+        alert('Failed to update user status. Please try again.');
+      }
+    })
+    .catch(error => {
+      console.error('Error updating user status:', error);
+      // Revert the toggle if request failed
+      event.target.checked = !isActive;
+      alert('Error updating user status. Please try again.');
+    });
   }
   
   
@@ -258,6 +407,57 @@
   });
 	}
 
+  // Edit user function
+  function editUser(userId) {
+    // This will redirect to an edit page or open an edit modal
+    // For now, let's redirect to a simple edit page
+    window.location.href = '<%= request.getContextPath() %>/Views/UpdateEmployeeDetails.jsp?userId=' + userId;
+  }
+
+  // Delete user function
+  function deleteUser(userId) {
+    // Debug logging
+    console.log('deleteUser called with userId:', userId);
+    console.log('userId type:', typeof userId);
+    
+    // Validate userId
+    if (!userId || userId === '' || userId === 'null' || userId === 'undefined') {
+      alert('Error: Invalid user ID. Cannot delete employee.');
+      console.error('Invalid userId:', userId);
+      return;
+    }
+    
+    if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
+      const requestBody = 'action=delete&userId=' + userId;
+      console.log('Request body:', requestBody);
+      
+      fetch('<%= request.getContextPath() %>/UserManagementServlet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: requestBody
+      })
+      .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+          alert('Employee deleted successfully!');
+          // Reload the page to refresh the table
+          location.reload();
+        } else {
+          alert('Failed to delete employee: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting employee:', error);
+        alert('Error deleting employee. Please try again.');
+      });
+    }
+  }
 </script>
 </body>
 </html>

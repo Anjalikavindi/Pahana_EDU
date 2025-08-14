@@ -34,8 +34,6 @@
 		border: none;
 	}
 	
-	
-	
 </style>
 
 <!-- Add Customer Modal -->
@@ -48,9 +46,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       
-      <form action="SaveCustomerServlet" method="post">
+      <form id="addCustomerForm" action="<%= request.getContextPath() %>/SaveCustomerServlet" method="post">
         <div class="modal-body mt-4">
         
+          <!-- Error message display -->
+          <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+          
           <div class="mb-3">
             <label for="accountNumber" class="form-label">Account Number</label>
             <input type="text" class="form-control" id="accountNumber" name="accountNumber" required>
@@ -93,3 +94,56 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('addCustomerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Hide any previous error messages
+    const errorDiv = document.getElementById('errorMessage');
+    errorDiv.style.display = 'none';
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        alert('Customer added successfully!');
+        // Reset form
+        this.reset();
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'));
+        modal.hide();
+        // Reload the page to refresh the customer list
+        location.reload();
+      } else {
+        return response.text().then(text => {
+          // Display error in the modal
+          errorDiv.textContent = text;
+          errorDiv.style.display = 'block';
+          // Scroll to top of modal to show error
+          document.querySelector('.modal-body').scrollTop = 0;
+        });
+      }
+    })
+    .catch(err => {
+      console.error('Add customer error:', err);
+      // Display error in the modal
+      errorDiv.textContent = 'Error occurred while adding customer.';
+      errorDiv.style.display = 'block';
+      // Scroll to top of modal to show error
+      document.querySelector('.modal-body').scrollTop = 0;
+    });
+  });
+
+    // Hide error message when modal is closed
+    document.getElementById('addCustomerModal').addEventListener('hidden.bs.modal', function () {
+      document.getElementById('errorMessage').style.display = 'none';
+      document.getElementById('addCustomerForm').reset();
+    });
+  });
+</script>

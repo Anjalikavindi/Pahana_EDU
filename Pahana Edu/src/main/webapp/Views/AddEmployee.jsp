@@ -1,6 +1,16 @@
 <!-- File: addemployee.jsp -->
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page import="java.util.List" %>
+<%@ page import="com.myapp.dao.RoleDAO" %>
+<%@ page import="com.myapp.model.RoleBean" %>
+
+<%
+    // Load roles for the dropdown
+    RoleDAO roleDAO = new RoleDAO();
+    List<RoleBean> roles = roleDAO.getAllRoles();
+    request.setAttribute("roles", roles);
+%>
 
 <style>
   .modal-content {
@@ -46,13 +56,18 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <!-- Add enctype for file upload -->
-      <form action="SaveEmployeeServlet" method="post" enctype="multipart/form-data">
+      <!-- Updated form to use AJAX submission -->
+      <form id="addEmployeeForm" method="post" action="#" onsubmit="handleAddEmployee(event); return false;">
         <div class="modal-body mt-4">
 
           <div class="mb-3">
             <label for="username" class="form-label">Username</label>
             <input type="text" class="form-control" id="username" name="username" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="fullName" name="fullName" required>
           </div>
 
           <div class="mb-3">
@@ -66,26 +81,20 @@
           </div>
 
           <div class="mb-3">
-            <label for="role" class="form-label">Role</label>
-            <select class="form-control" id="role" name="role" required>
-			    <option value="">-- Select Role --</option>
-			    <c:forEach var="role" items="${roleList}">
-			        <option value="${role}">${role}</option>
-			    </c:forEach>
-			</select>
-          </div>
-
-          <!-- Image Upload Field -->
-          <div class="mb-3">
-            <label for="employeeImage" class="form-label">Employee Image</label>
-            <input type="file" class="form-control" id="employeeImage" name="employeeImage" accept="image/*">
+            <label for="roleId" class="form-label">Role</label>
+            <select class="form-control" id="roleId" name="roleId" required>
+                <option value="">-- Select Role --</option>
+                <c:forEach var="role" items="${roles}">
+                    <option value="${role.roleId}">${role.roleName}</option>
+                </c:forEach>
+            </select>
           </div>
 
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-1" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-2">Add Employee</button>
+          <button type="button" class="btn btn-2" id="addEmployeeBtn" onclick="handleAddEmployee(event)">Add Employee</button>
         </div>
       </form>
 

@@ -1,6 +1,24 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!-- Directive Tags -->
+<%@ page import="java.util.List" %>
+<%@ page import="com.myapp.dao.CustomerDAO" %>
+<%@ page import="com.myapp.model.CustomerBean" %>
+<!-- Directive Tags -->
 <%@ include file="Sidebar.jsp" %>
+
+<%
+    // Fetch all customers from database
+    CustomerDAO customerDAO = new CustomerDAO();
+    List<CustomerBean> customers = null;
+    String errorMessage = null;
+    
+    try {
+        customers = customerDAO.getAllCustomers();
+    } catch (Exception e) {
+        errorMessage = "Error loading customers: " + e.getMessage();
+        e.printStackTrace();
+    }
+%>
 
 <!DOCTYPE html>
 <html>
@@ -125,6 +143,15 @@
 	      </div>
 	      
 	      
+	      <!-- Error Message Display -->
+	      <% if (errorMessage != null) { %>
+	        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+	          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+	          <%= errorMessage %>
+	          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	        </div>
+	      <% } %>
+	      
 	      <!-- Search Bar to filter customers by Account Number -->
 			<div class="row mt-5 mb-5 justify-content-end">
 			  <div class="col-md-3">
@@ -157,60 +184,56 @@
                 </tr>
               </thead>
               <tbody>
-                <!-- Sample rows -->
+                <%
+                  if (customers != null && !customers.isEmpty()) {
+                    for (CustomerBean customer : customers) {
+                      String fullName = customer.getFirstName() + " " + customer.getLastName();
+                %>
                 <tr>
-                  <td>1001</td>
-                  <td>John Doe</td>
-                  <td>123 Main Street, Colombo</td>
-                  <td>0771234567</td>
-                  <td>240</td>
+                  <td><%= customer.getAccountNumber() %></td>
+                  <td><%= fullName %></td>
+                  <td><%= customer.getAddress() != null ? customer.getAddress() : "N/A" %></td>
+                  <td><%= customer.getContactNumber() != null ? customer.getContactNumber() : "N/A" %></td>
+                  <td><%= customer.getRemainingUnits() %></td>
                   <td class="action-buttons">
 				      <span class="view-icon"
-					      data-account="<%=1001%>" 
-					      data-name="John Doe" 
-					      data-address="123 Main Street, Colombo" 
-					      data-contact="0771234567" 
-					      data-units="240">
+					      data-account="<%= customer.getAccountNumber() %>" 
+					      data-name="<%= fullName %>" 
+					      data-address="<%= customer.getAddress() != null ? customer.getAddress() : "N/A" %>" 
+					      data-contact="<%= customer.getContactNumber() != null ? customer.getContactNumber() : "N/A" %>" 
+					      data-units="<%= customer.getRemainingUnits() %>"
+					      data-email="<%= customer.getEmail() != null ? customer.getEmail() : "N/A" %>">
 					   <i class="bi bi-eye-fill text-primary" title="View"></i>
 					 </span>
 				     <span class="edit-icon"
-					      data-account="<%=1001%>"
-					      data-name="John Doe"
-					      data-address="123 Main Street, Colombo"
-					      data-contact="0771234567"
-					      data-units="240">
+					      data-account="<%= customer.getAccountNumber() %>"
+					      data-name="<%= fullName %>"
+					      data-address="<%= customer.getAddress() != null ? customer.getAddress() : "N/A" %>"
+					      data-contact="<%= customer.getContactNumber() != null ? customer.getContactNumber() : "N/A" %>"
+					      data-units="<%= customer.getRemainingUnits() %>"
+					      data-email="<%= customer.getEmail() != null ? customer.getEmail() : "N/A" %>">
 					  <i class="bi bi-pencil-fill text-success" title="Edit"></i>
 					</span>
-
+					<span class="delete-icon"
+					      data-account="<%= customer.getAccountNumber() %>"
+					      data-name="<%= fullName %>">
+					  <i class="bi bi-trash-fill text-danger" title="Delete"></i>
+					</span>
 				  </td>
                 </tr>
+                <%
+                    }
+                  } else {
+                %>
                 <tr>
-                  <td>1002</td>
-                  <td>Jane Smith</td>
-                  <td>456 Queen's Road, Kandy</td>
-                  <td>0719876543</td>
-                  <td>310</td>
-                  <td class="action-buttons">
-				      <span class="view-icon"
-					      data-account="<%=1002%>" 
-					      data-name="Jane Smith" 
-					      data-address="456 Queen's Road, Kandy" 
-					      data-contact="0719876543" 
-					      data-units="310">
-					   <i class="bi bi-eye-fill text-primary" title="View"></i>
-					 </span>
-				     <span class="edit-icon"
-					      data-account="<%=1002%>"
-					      data-name="Jane Smith"
-					      data-address="456 Queen's Road, Kandy"
-					      data-contact="0719876543"
-					      data-units="310">
-					  <i class="bi bi-pencil-fill text-success" title="Edit"></i>
-					</span>
-
-				  </td>
+                  <td colspan="6" class="text-center text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    No customers found. <a href="#" id="addFirstCustomerBtn">Add your first customer</a>
+                  </td>
                 </tr>
-                <!-- Add dynamic rows here using scriptlet/JSTL if data is fetched from DB -->
+                <%
+                  }
+                %>
               </tbody>
             </table>
           </div>
@@ -225,7 +248,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  document.getElementById('openAddCustomerBtn').addEventListener('click', function () {
+  // Function to open add customer modal
+  function openAddCustomerModal() {
     // Load modal content from addcustomer.jsp
     fetch('<%= request.getContextPath() %>/Views/AddCustomer.jsp')
       .then(response => response.text())
@@ -237,6 +261,17 @@
         modal.show();
       })
       .catch(err => console.error('Failed to load modal:', err));
+  }
+
+  // Event listener for main "Add Customers" button
+  document.getElementById('openAddCustomerBtn').addEventListener('click', openAddCustomerModal);
+  
+  // Event listener for "Add your first customer" link (if it exists)
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'addFirstCustomerBtn') {
+      e.preventDefault();
+      openAddCustomerModal();
+    }
   });
   
   
@@ -263,7 +298,8 @@
         name: this.dataset.name,
         address: this.dataset.address,
         contact: this.dataset.contact,
-        units: this.dataset.units
+        units: this.dataset.units,
+        email: this.dataset.email
       });
 
       fetch('<%= request.getContextPath() %>/Views/DisplayCustomerDetails.jsp?' + params.toString())
@@ -288,7 +324,8 @@
       name: this.dataset.name,
       address: this.dataset.address,
       contact: this.dataset.contact,
-      units: this.dataset.units
+      units: this.dataset.units,
+      email: this.dataset.email
     });
 
     fetch('<%= request.getContextPath() %>/Views/UpdateCustomerDetails.jsp?' + params.toString())
@@ -303,6 +340,52 @@
       .catch(err => console.error('Failed to load update modal:', err));
   });
 });
+
+  //Delete customer functionality
+  document.querySelectorAll('.delete-icon').forEach(function(icon) {
+    icon.addEventListener('click', function () {
+      const accountNumber = this.dataset.account;
+      const customerName = this.dataset.name;
+      
+      console.log('Delete clicked for account:', accountNumber); // Debug log
+      console.log('Account number type:', typeof accountNumber); // Debug log
+      console.log('Account number length:', accountNumber ? accountNumber.length : 'null/undefined'); // Debug log
+      console.log('All dataset attributes:', this.dataset); // Debug log
+      
+      if (confirm('Are you sure you want to delete customer "' + customerName + '" (Account: ' + accountNumber + ')? This action cannot be undone.')) {
+        const formData = new FormData();
+        formData.append('accountNumber', accountNumber);
+        
+        console.log('FormData contents:'); // Debug log
+        for (let [key, value] of formData.entries()) {
+          console.log(key, ':', value); // Debug log
+        }
+        
+        fetch('<%= request.getContextPath() %>/DeleteCustomerServlet', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: 'accountNumber=' + encodeURIComponent(accountNumber)
+        })
+        .then(response => {
+          console.log('Delete response status:', response.status); // Debug log
+          if (response.ok) {
+            alert('Customer deleted successfully!');
+            location.reload(); // Reload the page to refresh the customer list
+          } else {
+            return response.text().then(text => {
+              alert('Failed to delete customer: ' + text);
+            });
+          }
+        })
+        .catch(err => {
+          console.error('Delete error:', err);
+          alert('Error occurred while deleting customer.');
+        });
+      }
+    });
+  });
 </script>
 
 

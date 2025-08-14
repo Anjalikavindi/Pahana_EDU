@@ -26,7 +26,17 @@
       <i class="bi bi-person-circle fs-3 fs-md-2 me-2 me-md-3"></i>
       <div class="d-flex flex-column text-start">
         <span class="fw-medium text-muted small small-md">Hi</span>
-        <span class="fw-bold text-dark" style="font-size: 0.85rem;">Admin Name</span>
+        <span class="fw-bold text-dark" style="font-size: 0.85rem;">
+        <%
+            HttpSession userSession = request.getSession(false);
+            if (userSession != null && userSession.getAttribute("loggedInUser") != null) {
+              com.myapp.model.UserBean user = (com.myapp.model.UserBean) userSession.getAttribute("loggedInUser");
+              out.print(user.getUsername() != null ? user.getUsername() : user.getUsername());
+            } else {
+              out.print("Admin");
+            }
+          %>
+         </span>
       </div>
     </div>
 
