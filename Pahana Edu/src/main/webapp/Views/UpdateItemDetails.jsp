@@ -25,7 +25,7 @@
         <h5 class="modal-title text-success" id="editItemModalLabel">Edit Item - <%= name %></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form action="UpdateItemServlet" method="post" enctype="multipart/form-data">
+      <form action="UpdateItemServlet" method="post" enctype="multipart/form-data" id="updateItemForm">
         <div class="modal-body row g-3 px-3">
           <div class="col-md-6 text-center">
             <img src="<%= imagePath %>" alt="Item Image" class="img-fluid rounded shadow" style="max-height: 250px;">
@@ -35,6 +35,7 @@
             </div>
           </div>
           <div class="col-md-6">
+          	<input type="hidden" name="itemId" value="<%= request.getParameter("id") %>">
             <div class="mb-3">
               <label for="itemName" class="form-label">Item Name</label>
               <input type="text" class="form-control" id="itemName" name="name" value="<%= name %>" required>

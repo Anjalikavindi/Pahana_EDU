@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.myapp.model.ItemBean;
 import com.myapp.util.DBConnection;
+import com.myapp.util.DatabaseConnection;
 
 public class ItemDAO {
 	
@@ -74,23 +75,55 @@ public class ItemDAO {
 
 	    return items;
 	}
+	
+	
+	// Update item details
+	public boolean updateItem(ItemBean item) {
+	    StringBuilder sql = new StringBuilder("UPDATE items SET item_name=?, price=?, quantity=?, item_description=?");
+	    if (item.getImagePath() != null && !item.getImagePath().isEmpty()) {
+	        sql.append(", image_path=?");
+	    }
+	    sql.append(" WHERE item_id=?");
+
+	    try (Connection conn = DBConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+	        ps.setString(1, item.getItemName());
+	        ps.setDouble(2, item.getPrice());
+	        ps.setInt(3, item.getQuantity());
+	        ps.setString(4, item.getItemDescription());
+
+	        int index = 5;
+	        if (item.getImagePath() != null && !item.getImagePath().isEmpty()) {
+	            ps.setString(index++, item.getImagePath());
+	        }
+
+	        ps.setInt(index, item.getItemId());
+
+	        int rows = ps.executeUpdate();
+	        return rows > 0;
+
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
 
 
-	// Delete item by item code
-    public boolean deleteItem(String itemCode) {
-        String sql = "DELETE FROM items WHERE item_code = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, itemCode);
-            int rows = ps.executeUpdate();
-            return rows > 0;
+	// Delete item by ID
+    public boolean deleteItem(int itemId) {
+        String sql = "DELETE FROM items WHERE item_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, itemId);
+            return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
-
 
 }

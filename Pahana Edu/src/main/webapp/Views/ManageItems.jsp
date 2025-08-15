@@ -167,9 +167,9 @@
 			      <a href="#" title="Edit" class="edit-circle icon-circle">
 			        <i class="bi bi-pencil-fill text-success"></i>
 			      </a>
-			      <a href="#" title="Delete" class="delete-circle icon-circle">
-			        <i class="bi bi-trash-fill text-danger"></i>
-			      </a>
+			      <a href="#" title="Delete" class="delete-circle icon-circle" data-item-id="<%= item.getItemId() %>">
+				    <i class="bi bi-trash-fill text-danger"></i>
+				 </a>
 			    </div>
 			  </div>
 			</div>
@@ -301,75 +301,109 @@
 	});
 
   
-  //Edit item popup
-  document.querySelectorAll(".card-icons .edit-circle").forEach(btn => {
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
+	//Edit item popup
+	document.querySelectorAll(".card-icons .edit-circle").forEach(btn => {
+	    btn.addEventListener("click", function (e) {
+	        e.preventDefault();
+	        const card = this.closest(".card");
+	        const name = card.querySelector(".card-title").innerText;
+	        const quantity = card.querySelector(".card-text:nth-child(3)").innerText.replace("Qtty: ", "");
+	        const price = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.price;
+	        const image = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.image;
+	        const itemId = this.closest(".card-icons").querySelector(".delete-circle").dataset.itemId; // Get ID
 
-      const card = this.closest(".card");
-      const name = card.querySelector(".card-title").innerText;
-      const quantity = card.querySelector(".card-text:nth-child(3)").innerText.replace("Qtty: ", "");
-      const price = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.price;
-      const image = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.image;
+	        const params = new URLSearchParams({ id: itemId, name, price, quantity, image }); // Include id
+	        fetch("UpdateItemDetails.jsp?" + params.toString())
+	            .then(res => res.text())
+	            .then(html => {
+	                document.getElementById("viewItemModalContainer").innerHTML = html;
+	                const modal = new bootstrap.Modal(document.getElementById("editItemModal"));
+	                modal.show();
+	            })
+	            .catch(err => console.error("Failed to load edit modal:", err));
+	    });
+	});
 
-      const params = new URLSearchParams({ name, price, quantity, image });
-
-      fetch("UpdateItemDetails.jsp?" + params.toString())
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById("viewItemModalContainer").innerHTML = html;
-          const modal = new bootstrap.Modal(document.getElementById("editItemModal"));
-          modal.show();
-        })
-        .catch(err => console.error("Failed to load edit modal:", err));
-    });
-  });
   
-	//Delete item popup
-	  document.querySelectorAll(".delete-circle").forEach(btn => {
-	      btn.addEventListener("click", function (e) {
-	          e.preventDefault();
-	          const itemCode = this.closest(".card").querySelector(".viewItemBtn").dataset.code;
-	
-	          Swal.fire({
-	              title: 'Are you sure?',
-	              text: "This will permanently delete the item!",
-	              icon: 'warning',
-	              showCancelButton: true,
-	              confirmButtonColor: '#d33',
-	              cancelButtonColor: '#6c757d',
-	              confirmButtonText: 'Yes, delete!'
-	          }).then((result) => {
-	              if (result.isConfirmed) {
-	                  fetch(`DeleteItemServlet?itemCode=${encodeURIComponent(itemCode)}`, {
-	                      method: 'POST'
-	                  })
-	                  .then(response => response.json())
-	                  .then(data => {
-	                      if (data.success) {
-	                          Swal.fire(
-	                              'Deleted!',
-	                              data.message,
-	                              'success'
-	                          ).then(() => {
-	                              window.location.reload();
-	                          });
-	                      } else {
-	                          Swal.fire(
-	                              'Error!',
-	                              data.message,
-	                              'error'
-	                          );
-	                      }
-	                  })
-	                  .catch(err => {
-	                      console.error(err);
-	                      Swal.fire('Error!', 'Something went wrong.', 'error');
-	                  });
-	              }
-	          });
-	      });
-	  });
+//Submit edit item form
+  document.addEventListener("submit", function(e) {
+      if (e.target && e.target.id === "updateItemForm") {
+          e.preventDefault();
+          const form = e.target;
+          const formData = new FormData(form);
+
+          fetch(form.action, {
+              method: "POST",
+              body: formData
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data.success) {
+                  Swal.fire({
+                      icon: 'success',
+                      title: 'Success',
+                      text: data.message
+                  }).then(() => window.location.reload());
+              } else {
+                  Swal.fire({
+                      icon: 'error',
+                      title: 'Error',
+                      text: data.message
+                  });
+              }
+          })
+          .catch(err => {
+              console.error(err);
+              Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Something went wrong!'
+              });
+          });
+      }
+  });
+
+  
+//Delete item popup
+  document.querySelectorAll(".delete-circle").forEach(btn => {
+      btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          const itemId = this.dataset.itemId;
+
+          Swal.fire({
+              title: 'Are you sure?',
+              text: "This will permanently delete the item!",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#DD4A48',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Yes, delete it!'
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  fetch('<%= request.getContextPath() %>/DeleteItemServlet', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/x-www-form-urlencoded'
+                      },
+                      body: 'item_id=' + encodeURIComponent(itemId)
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          Swal.fire('Deleted!', data.message, 'success').then(() => location.reload());
+                      } else {
+                          Swal.fire('Error!', data.message, 'error');
+                      }
+                  })
+                  .catch(err => {
+                      console.error(err);
+                      Swal.fire('Error!', 'Something went wrong.', 'error');
+                  });
+              }
+          });
+      });
+  });
+
 
 </script>
 
