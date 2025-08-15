@@ -23,6 +23,7 @@
         </div>
         <div class="col-md-6">
           <h6>Name: <span class="text-muted"><%= name %></span></h6>
+          <h6>Item Code: <span class="text-muted"><%= request.getParameter("code") %></span></h6>
           <h6>Price: <span class="text-muted">LKR <%= price %></span></h6>
           <h6>Quantity: <span class="text-muted"><%= quantity %></span></h6>
           <h6>Description: <span class="text-muted"><%= description %></span></h6> 

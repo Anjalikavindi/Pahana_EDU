@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import java.io.File;
-import java.io.InputStream;
 
 import com.myapp.dao.ItemDAO;
 import com.myapp.model.ItemBean;
@@ -93,14 +92,14 @@ public class AddItemServlet extends HttpServlet {
         }
     }
     
-    private void sendError(HttpServletResponse response, String message) throws IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        response.getWriter().println(
-            "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>" +
-            "<script>" +
-            "Swal.fire({ icon: 'error', title: 'Error', text: '" + message + "' });" +
-            "</script>"
-        );
-    }
+//    private void sendError(HttpServletResponse response, String message) throws IOException {
+//        response.setContentType("text/html;charset=UTF-8");
+//        response.getWriter().println(
+//            "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>" +
+//            "<script>" +
+//            "Swal.fire({ icon: 'error', title: 'Error', text: '" + message + "' });" +
+//            "</script>"
+//        );
+//    }
 
 }

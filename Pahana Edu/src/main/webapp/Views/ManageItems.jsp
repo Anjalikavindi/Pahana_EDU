@@ -139,39 +139,42 @@
 	      
 	      <!-- Cards Grid -->
 			<div class="row g-4 mt-3">
-	        <%
-	          ItemDAO itemDAO = new ItemDAO();
-	          List<ItemBean> items = itemDAO.getAllItems(); // We'll need to create this method
-	          for (ItemBean item : items) {
-	        %>
-	        <div class="col-lg-3 col-md-4 col-sm-6">
-	          <div class="card h-100">
-	            <img src="<%= request.getContextPath() %>/<%= item.getImagePath() %>" class="card-img-top" alt="item image">
-	            <div class="card-body">
-	              <h5 class="card-title"><%= item.getItemName() %></h5>
-	              <p class="card-text text-muted mb-0">Item code: <%= item.getItemCode() %></p>
-	              <p class="card-text text-muted mb-0">Qtty: <%= item.getQuantity() %></p>
-	            </div>
-	            <div class="card-footer bg-white border-top-0 pb-3 card-icons">
-	              <a href="#" title="View" class="view-circle icon-circle viewItemBtn"
-	                 data-name="<%= item.getItemName() %>"
-	                 data-price="<%= item.getPrice() %>"
-	                 data-quantity="<%= item.getQuantity() %>"
-	                 data-image="<%= request.getContextPath() %>/<%= item.getImagePath() %>">
-	                 <i class="bi bi-eye-fill text-primary"></i>
-	              </a>
-	              <a href="#" title="Edit" class="edit-circle icon-circle">
-	                <i class="bi bi-pencil-fill text-success"></i>
-	              </a>
-	              <a href="#" title="Delete" class="delete-circle icon-circle">
-	                <i class="bi bi-trash-fill text-danger"></i>
-	              </a>
-	            </div>
-	          </div>
-	        </div>
-	        <% } %>
-	      </div>
-          
+			<%
+			  ItemDAO itemDAO = new ItemDAO();
+			  List<ItemBean> items = itemDAO.getAllItems();
+			  for (ItemBean item : items) {
+			%>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+			  <div class="card h-100">
+			    <img src="<%= request.getContextPath() %>/<%= item.getImagePath() %>" class="card-img-top" alt="item image">
+			    <div class="card-body">
+			      <h5 class="card-title"><%= item.getItemName() %></h5>
+			      <p class="card-text text-muted mb-0 item-code">Item code: <%= item.getItemCode() %></p>
+			      <p class="card-text text-muted mb-0">Qtty: <%= item.getQuantity() %></p>
+			    </div>
+			    <div class="card-footer bg-white border-top-0 pb-3 card-icons">
+			      <a href="#" title="View" class="view-circle icon-circle viewItemBtn"
+			         data-code="<%= item.getItemCode() %>"
+			         data-name="<%= item.getItemName() %>"
+			         data-price="<%= item.getPrice() %>"
+			         data-quantity="<%= item.getQuantity() %>"
+			         data-description="<%= item.getItemDescription() %>"
+			         data-added_by="<%= item.getCreatedBy() %>"
+			         data-added_at="<%= item.getCreatedAt() %>"
+			         data-image="<%= request.getContextPath() %>/<%= item.getImagePath() %>">
+			         <i class="bi bi-eye-fill text-primary"></i>
+			      </a>
+			      <a href="#" title="Edit" class="edit-circle icon-circle">
+			        <i class="bi bi-pencil-fill text-success"></i>
+			      </a>
+			      <a href="#" title="Delete" class="delete-circle icon-circle">
+			        <i class="bi bi-trash-fill text-danger"></i>
+			      </a>
+			    </div>
+			  </div>
+			</div>
+			<% } %>
+			</div>
            </main>
            <div id="addItemModalContainer"></div>
            <div id="viewItemModalContainer"></div>
@@ -251,48 +254,52 @@
   });
   
   
-	//Search by item code
-	  document.getElementById("itemSearchInput").addEventListener("input", function () {
-	      const searchCode = this.value.trim().toLowerCase();
+	//Search functionality by item code
+	document.getElementById("itemSearchInput").addEventListener("input", function () {
+	    const searchCode = this.value.trim().toLowerCase();
 	
-	      document.querySelectorAll(".card").forEach(card => {
-	          const itemCodeElement = card.querySelector(".item-code");
-	          if (itemCodeElement) {
-	              const itemCode = itemCodeElement.innerText.replace("Item code: ", "").toLowerCase();
-	              card.closest(".col-lg-3").style.display = itemCode.includes(searchCode) ? "" : "none";
-	          }
-	      });
-	  });
+	    document.querySelectorAll(".card").forEach(card => {
+	        const itemCodeElement = card.querySelector(".item-code");
+	        if (itemCodeElement) {
+	            const itemCode = itemCodeElement.innerText.replace("Item code: ", "").toLowerCase();
+	            if (itemCode.includes(searchCode)) {
+	                card.closest(".col-lg-3").style.display = "";
+	            } else {
+	                card.closest(".col-lg-3").style.display = "none";
+	            }
+	        }
+	    });
+	});
 
 
   
-  //View item popup
-  document.querySelectorAll(".viewItemBtn").forEach(btn => {
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
+	//View item popup
+	document.querySelectorAll(".viewItemBtn").forEach(btn => {
+	  btn.addEventListener("click", function (e) {
+	    e.preventDefault();
 
-      const name = this.dataset.name;
-      const price = this.dataset.price;
-      const quantity = this.dataset.quantity;
-      const image = this.dataset.image;
+	    const params = new URLSearchParams({
+	      code: this.dataset.code,
+	      name: this.dataset.name,
+	      price: this.dataset.price,
+	      quantity: this.dataset.quantity,
+	      description: this.dataset.description,
+	      added_by: this.dataset.added_by,
+	      added_at: this.dataset.added_at,
+	      image: this.dataset.image
+	    });
 
-      const params = new URLSearchParams({
-        name,
-        price,
-        quantity,
-        image
-      });
+	    fetch("DisplayItemDetails.jsp?" + params.toString())
+	      .then(res => res.text())
+	      .then(html => {
+	        document.getElementById("viewItemModalContainer").innerHTML = html;
+	        const modal = new bootstrap.Modal(document.getElementById("viewItemModal"));
+	        modal.show();
+	      })
+	      .catch(err => console.error("Failed to load item modal:", err));
+	  });
+	});
 
-      fetch("DisplayItemDetails.jsp?" + params.toString())
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById("viewItemModalContainer").innerHTML = html;
-          const modal = new bootstrap.Modal(document.getElementById("viewItemModal"));
-          modal.show();
-        })
-        .catch(err => console.error("Failed to load item modal:", err));
-    });
-  });
   
   //Edit item popup
   document.querySelectorAll(".card-icons .edit-circle").forEach(btn => {
@@ -317,6 +324,53 @@
         .catch(err => console.error("Failed to load edit modal:", err));
     });
   });
+  
+	//Delete item popup
+	  document.querySelectorAll(".delete-circle").forEach(btn => {
+	      btn.addEventListener("click", function (e) {
+	          e.preventDefault();
+	          const itemCode = this.closest(".card").querySelector(".viewItemBtn").dataset.code;
+	
+	          Swal.fire({
+	              title: 'Are you sure?',
+	              text: "This will permanently delete the item!",
+	              icon: 'warning',
+	              showCancelButton: true,
+	              confirmButtonColor: '#d33',
+	              cancelButtonColor: '#6c757d',
+	              confirmButtonText: 'Yes, delete!'
+	          }).then((result) => {
+	              if (result.isConfirmed) {
+	                  fetch(`DeleteItemServlet?itemCode=${encodeURIComponent(itemCode)}`, {
+	                      method: 'POST'
+	                  })
+	                  .then(response => response.json())
+	                  .then(data => {
+	                      if (data.success) {
+	                          Swal.fire(
+	                              'Deleted!',
+	                              data.message,
+	                              'success'
+	                          ).then(() => {
+	                              window.location.reload();
+	                          });
+	                      } else {
+	                          Swal.fire(
+	                              'Error!',
+	                              data.message,
+	                              'error'
+	                          );
+	                      }
+	                  })
+	                  .catch(err => {
+	                      console.error(err);
+	                      Swal.fire('Error!', 'Something went wrong.', 'error');
+	                  });
+	              }
+	          });
+	      });
+	  });
+
 </script>
 
 

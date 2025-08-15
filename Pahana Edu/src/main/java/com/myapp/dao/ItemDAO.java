@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.Timestamp;
 import java.util.UUID;
 
 import com.myapp.model.ItemBean;
@@ -60,6 +61,9 @@ public class ItemDAO {
 	            item.setItemDescription(rs.getString("item_description"));
 	            item.setImagePath(rs.getString("image_path"));
 	            item.setCreatedBy(rs.getString("created_by"));
+	            
+	            Timestamp createdAt = rs.getTimestamp("created_at");
+                item.setCreatedAt(createdAt);
 
 	            items.add(item);
 	        }
@@ -71,6 +75,22 @@ public class ItemDAO {
 	    return items;
 	}
 
+
+	// Delete item by item code
+    public boolean deleteItem(String itemCode) {
+        String sql = "DELETE FROM items WHERE item_code = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, itemCode);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 
 }
