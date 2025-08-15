@@ -11,7 +11,7 @@ public class CustomerDAO {
 	// Get all customers
     public List<CustomerBean> getAllCustomers() {
         List<CustomerBean> customers = new ArrayList<>();
-        String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units FROM customers";
+        String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -26,6 +26,8 @@ public class CustomerDAO {
                 customer.setContactNumber(rs.getString("contact_number"));
                 customer.setAddress(rs.getString("address"));
                 customer.setRemainingUnits(rs.getInt("remaining_units"));
+                customer.setCreatedBy(rs.getString("created_by"));
+                customer.setCreatedAt(rs.getTimestamp("created_at"));
                 customers.add(customer);
             }
         } catch (SQLException e) {
@@ -37,7 +39,7 @@ public class CustomerDAO {
     
     // Get customer by account number
     public CustomerBean getCustomerByAccountNumber(String accountNumber) {
-        String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units FROM customers WHERE account_number = ?";
+        String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers WHERE account_number = ?";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -54,6 +56,8 @@ public class CustomerDAO {
                 customer.setContactNumber(rs.getString("contact_number"));
                 customer.setAddress(rs.getString("address"));
                 customer.setRemainingUnits(rs.getInt("remaining_units"));
+                customer.setCreatedBy(rs.getString("created_by"));
+                customer.setCreatedAt(rs.getTimestamp("created_at"));
                 return customer;
             }
         } catch (SQLException e) {
@@ -65,7 +69,7 @@ public class CustomerDAO {
     
     // Add new customer
     public boolean addCustomer(CustomerBean customer) {
-        String sql = "INSERT INTO customers (account_number, first_name, last_name, email, contact_number, address, remaining_units) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO customers (account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -77,6 +81,7 @@ public class CustomerDAO {
             stmt.setString(5, customer.getContactNumber());
             stmt.setString(6, customer.getAddress());
             stmt.setInt(7, customer.getRemainingUnits());
+            stmt.setString(8, customer.getCreatedBy());
             
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {

@@ -1,5 +1,7 @@
 package com.myapp.model;
 
+import java.sql.Timestamp;
+
 public class CustomerBean {
 
 	private String accountNumber;
@@ -9,6 +11,8 @@ public class CustomerBean {
     private String contactNumber;
     private String address;
     private int remainingUnits;
+    private String createdBy;
+    private Timestamp createdAt;
     
     
 	public String getAccountNumber() {
@@ -52,6 +56,18 @@ public class CustomerBean {
 	}
 	public void setRemainingUnits(int remainingUnits) {
 		this.remainingUnits = remainingUnits;
+	}
+	public String getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+	public Timestamp getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(Timestamp createdAt) {
+		this.createdAt = createdAt;
 	}
     
     

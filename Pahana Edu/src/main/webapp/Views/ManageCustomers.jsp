@@ -96,6 +96,14 @@
 	  background-color: #aeeed7;
 	}
 	
+	.action-buttons .delete-icon {
+	  background-color: #ffe0e0;
+	}
+	
+	.action-buttons .delete-icon:hover {
+	  background-color: #ffcccc;
+	}
+	
 	.action-buttons i {
 	  font-size: 1rem;
 	  color: inherit;
@@ -246,6 +254,8 @@
 
 <!-- Bootstrap JS (Optional) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 CSS & JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
   // Function to open add customer modal
@@ -341,51 +351,59 @@
   });
 });
 
-  //Delete customer functionality
-  document.querySelectorAll('.delete-icon').forEach(function(icon) {
-    icon.addEventListener('click', function () {
-      const accountNumber = this.dataset.account;
-      const customerName = this.dataset.name;
-      
-      console.log('Delete clicked for account:', accountNumber); // Debug log
-      console.log('Account number type:', typeof accountNumber); // Debug log
-      console.log('Account number length:', accountNumber ? accountNumber.length : 'null/undefined'); // Debug log
-      console.log('All dataset attributes:', this.dataset); // Debug log
-      
-      if (confirm('Are you sure you want to delete customer "' + customerName + '" (Account: ' + accountNumber + ')? This action cannot be undone.')) {
-        const formData = new FormData();
-        formData.append('accountNumber', accountNumber);
-        
-        console.log('FormData contents:'); // Debug log
-        for (let [key, value] of formData.entries()) {
-          console.log(key, ':', value); // Debug log
-        }
-        
-        fetch('<%= request.getContextPath() %>/DeleteCustomerServlet', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: 'accountNumber=' + encodeURIComponent(accountNumber)
-        })
-        .then(response => {
-          console.log('Delete response status:', response.status); // Debug log
-          if (response.ok) {
-            alert('Customer deleted successfully!');
-            location.reload(); // Reload the page to refresh the customer list
-          } else {
-            return response.text().then(text => {
-              alert('Failed to delete customer: ' + text);
-            });
-          }
-        })
-        .catch(err => {
-          console.error('Delete error:', err);
-          alert('Error occurred while deleting customer.');
+	// Delete customer
+	document.querySelectorAll('.delete-icon').forEach(icon => {
+    icon.addEventListener('click', function (e) {
+        const accountNumber = e.currentTarget.dataset.account;
+        const customerName = e.currentTarget.dataset.name;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Delete customer "' + customerName + '" (Account: ' + accountNumber + ')?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DD4A48',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(result => {
+            if (result.isConfirmed) {
+                fetch('<%= request.getContextPath() %>/DeleteCustomerServlet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'accountNumber=' + encodeURIComponent(accountNumber)
+                }).then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: 'Customer deleted successfully.',
+                            confirmButtonColor: '#DD4A48'
+                        }).then(() => location.reload());
+                    } else {
+                        return response.text().then(text => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Failed to delete customer: ' + text,
+                                confirmButtonColor: '#DD4A48'
+                            });
+                        });
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Error occurred while deleting customer.',
+                        confirmButtonColor: '#DD4A48'
+                    });
+                });
+            }
         });
-      }
     });
-  });
+});
+
+
 </script>
 
 

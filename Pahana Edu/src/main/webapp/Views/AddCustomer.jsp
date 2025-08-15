@@ -46,11 +46,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       
-      <form id="addCustomerForm" action="<%= request.getContextPath() %>/SaveCustomerServlet" method="post">
+      <form id="addCustomerForm" action="<%= request.getContextPath() %>/AddCustomerServlet" method="post">
         <div class="modal-body mt-4">
         
-          <!-- Error message display -->
-          <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+          
           
           <div class="mb-3">
             <label for="accountNumber" class="form-label">Account Number</label>
@@ -95,54 +94,83 @@
   </div>
 </div>
 
+<!-- SweetAlert2 CSS & JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addCustomerForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+      e.preventDefault();
 
-    // Hide any previous error messages
-    const errorDiv = document.getElementById('errorMessage');
-    errorDiv.style.display = 'none';
+      const formData = new FormData(this);
 
-    const formData = new FormData(this);
+      fetch(this.action, {
+    	    method: 'POST',
+    	    body: formData
+    	})
+    	.then(response => {
+    	    return response.json().then(data => ({ status: response.status, body: data }));
+    	})
+    	.then(({ status, body }) => {
+    	    if (status === 200 && body.status === "success") {
+    	        const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'));
+    	        modal.hide();
+    	        Swal.fire({
+    	            icon: 'success',
+    	            title: 'Added!',
+    	            text: body.message,
+    	            confirmButtonColor: '#DD4A48'
+    	        }).then(() => {
+    	            location.reload();
+    	        });
+    	    }
+    	    else if (status === 409) {
+    	        Swal.fire({
+    	            icon: 'warning',
+    	            title: 'Duplicate Account Number',
+    	            text: body.message,
+    	            confirmButtonColor: '#DD4A48'
+    	        });
+    	    }
+    	    else if (status === 400) {
+    	        Swal.fire({
+    	            icon: 'error',
+    	            title: 'Missing Fields',
+    	            text: body.message,
+    	            confirmButtonColor: '#DD4A48'
+    	        });
+    	    }
+    	    else if (status === 401) {
+    	        Swal.fire({
+    	            icon: 'error',
+    	            title: 'Unauthorized',
+    	            text: body.message,
+    	            confirmButtonColor: '#DD4A48'
+    	        });
+    	    }
+    	    else {
+    	        Swal.fire({
+    	            icon: 'error',
+    	            title: 'Error!',
+    	            text: body.message || 'Something went wrong.',
+    	            confirmButtonColor: '#DD4A48'
+    	        });
+    	    }
+    	})
+    	.catch(err => {
+    	    console.error('Add customer error:', err);
+    	    Swal.fire({
+    	        icon: 'error',
+    	        title: 'Error!',
+    	        text: 'Error occurred while adding customer.',
+    	        confirmButtonColor: '#DD4A48'
+    	    });
+    	});
 
-    fetch(this.action, {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => {
-      if (response.ok) {
-        alert('Customer added successfully!');
-        // Reset form
-        this.reset();
-        // Close modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'));
-        modal.hide();
-        // Reload the page to refresh the customer list
-        location.reload();
-      } else {
-        return response.text().then(text => {
-          // Display error in the modal
-          errorDiv.textContent = text;
-          errorDiv.style.display = 'block';
-          // Scroll to top of modal to show error
-          document.querySelector('.modal-body').scrollTop = 0;
-        });
-      }
-    })
-    .catch(err => {
-      console.error('Add customer error:', err);
-      // Display error in the modal
-      errorDiv.textContent = 'Error occurred while adding customer.';
-      errorDiv.style.display = 'block';
-      // Scroll to top of modal to show error
-      document.querySelector('.modal-body').scrollTop = 0;
     });
-  });
 
-    // Hide error message when modal is closed
+    // Reset form when modal is closed
     document.getElementById('addCustomerModal').addEventListener('hidden.bs.modal', function () {
-      document.getElementById('errorMessage').style.display = 'none';
       document.getElementById('addCustomerForm').reset();
     });
   });
