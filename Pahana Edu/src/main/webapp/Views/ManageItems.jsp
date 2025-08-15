@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!-- Directive Tags -->
+<%@ page import="java.util.List"%>
+<%@ page import="com.myapp.model.ItemBean"%>
 <%@ include file="Sidebar.jsp" %>
 
 <!DOCTYPE html>
@@ -12,6 +14,7 @@
   <link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/css/bootstrap.min.css">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
   <style>
     body {
@@ -135,169 +138,55 @@
 	      
 	      <!-- Cards Grid -->
 			<div class="row g-4 mt-3">
-			  <div class="col-lg-3 col-md-4 col-sm-6">
-			    <div class="card h-100">
-			      <img src="<%= request.getContextPath() %>/Remove/Book1.jpg" class="card-img-top" alt="book image">
-			      <div class="card-body">
-			        <h5 class="card-title">Deathly Hollows</h5>
-			        <p class="card-text text-muted mb-0">Item code: 001</p>
-			        <p class="card-text text-muted mb-0">Qtty: 2</p>
-			      </div>
-			      <div class="card-footer bg-white border-top-0 pb-3 card-icons">
-					  <a href="#" title="View"
-						   class="view-circle icon-circle viewItemBtn"
-						   data-name="Deathly Hollows"
-						   data-price="1200.00"
-						   data-quantity="2"
-						   data-image="<%= request.getContextPath() %>/Remove/Book1.jpg">
-						   <i class="bi bi-eye-fill text-primary"></i>
-					  </a>
-					  <a href="#" title="Edit" class="edit-circle icon-circle">
-					    <i class="bi bi-pencil-fill text-success"></i>
-					  </a>
-					  <a href="#" title="Delete" class="delete-circle icon-circle">
-					    <i class="bi bi-trash-fill text-danger"></i>
-					  </a>
-				 </div>
+			<%
+			    List<ItemBean> itemsList = (List<ItemBean>) request.getAttribute("itemsList");
+			    if (itemsList != null && !itemsList.isEmpty()) {
+			        for (ItemBean item : itemsList) {
+			%>
+			    <div class="col-lg-3 col-md-4 col-sm-6">
+			        <div class="card h-100">
+			            <img src="<%= request.getContextPath() %>/<%= item.getImagePath() %>" class="card-img-top" alt="item image">
+			            <div class="card-body">
+			                <h5 class="card-title"><%= item.getItemName() %></h5>
+			                <p class="card-text text-muted mb-0 item-code">Item code: <%= item.getItemCode() %></p>
+			                <p class="card-text text-muted mb-0 item-quantity">Qtty: <%= item.getQuantity() %></p>
+			                <p class="card-text text-muted mb-0 item-price">Price: $<%= item.getPrice() %></p>
+			            </div>
+			            <div class="card-footer bg-white border-top-0 pb-3 card-icons">
+			                <a href="#" title="View" class="view-circle icon-circle viewItemBtn"
+			                   data-id="<%= item.getItemId() %>"
+			                   data-name="<%= item.getItemName() %>"
+			                   data-price="<%= item.getPrice() %>"
+			                   data-quantity="<%= item.getQuantity() %>"
+			                   data-code="<%= item.getItemCode() %>"
+			                   data-image="<%= request.getContextPath() %>/<%= item.getImagePath() %>">
+			                   <i class="bi bi-eye-fill text-primary"></i>
+			                </a>
+			                <a href="#" title="Edit" class="edit-circle icon-circle editItemBtn"
+			                   data-id="<%= item.getItemId() %>"
+			                   data-name="<%= item.getItemName() %>"
+			                   data-price="<%= item.getPrice() %>"
+			                   data-quantity="<%= item.getQuantity() %>"
+			                   data-code="<%= item.getItemCode() %>"
+			                   data-image="<%= request.getContextPath() %>/<%= item.getImagePath() %>">
+			                   <i class="bi bi-pencil-fill text-success"></i>
+			                </a>
+			                <a href="#" title="Delete" class="delete-circle icon-circle deleteItemBtn"
+			                   data-id="<%= item.getItemId() %>">
+			                   <i class="bi bi-trash-fill text-danger"></i>
+			                </a>
+			            </div>
+			        </div>
 			    </div>
-			  </div>
-			
-			  <div class="col-lg-3 col-md-4 col-sm-6">
-			    <div class="card h-100">
-			      <img src="<%= request.getContextPath() %>/Remove/Book2.jpg" class="card-img-top" alt="book image">
-			      <div class="card-body">
-			        <h5 class="card-title">Harry Potter</h5>
-			        <p class="card-text text-muted mb-0">Item code: 002</p>
-			        <p class="card-text text-muted mb-0">Qtty: 100</p>
-			      </div>
-			      <div class="card-footer bg-white border-top-0 pb-3 card-icons">
-					  <a href="#" title="View"
-						   class="view-circle icon-circle viewItemBtn"
-						   data-name="Harry Potter"
-						   data-price="2500.00"
-						   data-quantity="100"
-						   data-image="<%= request.getContextPath() %>/Remove/Book2.jpg">
-						   <i class="bi bi-eye-fill text-primary"></i>
-					  </a>
-					  <a href="#" title="Edit" class="edit-circle icon-circle">
-					    <i class="bi bi-pencil-fill text-success"></i>
-					  </a>
-					  <a href="#" title="Delete" class="delete-circle icon-circle">
-					    <i class="bi bi-trash-fill text-danger"></i>
-					  </a>
-				 </div>
-			    </div>
-			  </div>
-			
-			  <div class="col-lg-3 col-md-4 col-sm-6">
-			    <div class="card h-100">
-			      <img src="<%= request.getContextPath() %>/Remove/Book3.jpg" class="card-img-top" alt="book image">
-			      <div class="card-body">
-			        <h5 class="card-title">Sorcerer's Stone</h5>
-			        <p class="card-text text-muted mb-0">Item code: 003</p>
-			        <p class="card-text text-muted mb-0">Qtty: 23</p>
-			      </div>
-			      <div class="card-footer bg-white border-top-0 pb-3 card-icons">
-					  <a href="#" title="View"
-						   class="view-circle icon-circle viewItemBtn"
-						   data-name="Sorcerer's Stone"
-						   data-price="1800.00"
-						   data-quantity="23"
-						   data-image="<%= request.getContextPath() %>/Remove/Book3.jpg">
-						   <i class="bi bi-eye-fill text-primary"></i>
-					  </a>
-					  <a href="#" title="Edit" class="edit-circle icon-circle">
-					    <i class="bi bi-pencil-fill text-success"></i>
-					  </a>
-					  <a href="#" title="Delete" class="delete-circle icon-circle">
-					    <i class="bi bi-trash-fill text-danger"></i>
-					  </a>
-				 </div>
-			    </div>
-			  </div>
-			
-			  <div class="col-lg-3 col-md-4 col-sm-6">
-			    <div class="card h-100">
-			      <img src="<%= request.getContextPath() %>/Remove/Book4.jpg" class="card-img-top" alt="book image">
-			      <div class="card-body">
-			        <h5 class="card-title">Half Blood Prince</h5>
-			        <p class="card-text text-muted mb-0">Item code: 004</p>
-			        <p class="card-text text-muted mb-0">Qtty: 58</p>
-			      </div>
-			      <div class="card-footer bg-white border-top-0 pb-3 card-icons">
-					  <a href="#" title="View"
-						   class="view-circle icon-circle viewItemBtn"
-						   data-name="Half Blood Prince"
-						   data-price="3800.00"
-						   data-quantity="58"
-						   data-image="<%= request.getContextPath() %>/Remove/Book4.jpg">
-						   <i class="bi bi-eye-fill text-primary"></i>
-					  </a>
-					  <a href="#" title="Edit" class="edit-circle icon-circle">
-					    <i class="bi bi-pencil-fill text-success"></i>
-					  </a>
-					  <a href="#" title="Delete" class="delete-circle icon-circle">
-					    <i class="bi bi-trash-fill text-danger"></i>
-					  </a>
-				  </div>
-			    </div>
-			  </div>
-			
-			  <div class="col-lg-3 col-md-4 col-sm-6">
-			    <div class="card h-100">
-			      <img src="<%= request.getContextPath() %>/Remove/Book5.jpg" class="card-img-top" alt="book image">
-			      <div class="card-body">
-			        <h5 class="card-title">Philosopher's Stone</h5>
-			        <p class="card-text text-muted mb-0">Item code: 005</p>
-			        <p class="card-text text-muted mb-0">Qtty: 203</p>
-			      </div>
-			      <div class="card-footer bg-white border-top-0 pb-3 card-icons">
-					  <a href="#" title="View"
-						   class="view-circle icon-circle viewItemBtn"
-						   data-name="Philosopher's Stone"
-						   data-price="1800.00"
-						   data-quantity="203"
-						   data-image="<%= request.getContextPath() %>/Remove/Book5.jpg">
-						   <i class="bi bi-eye-fill text-primary"></i>
-					  </a>
-					  <a href="#" title="Edit" class="edit-circle icon-circle">
-					    <i class="bi bi-pencil-fill text-success"></i>
-					  </a>
-					  <a href="#" title="Delete" class="delete-circle icon-circle">
-					    <i class="bi bi-trash-fill text-danger"></i>
-					  </a>
-				  </div>
-			    </div>
-			  </div>
-			
-			  <div class="col-lg-3 col-md-4 col-sm-6">
-			    <div class="card h-100">
-			      <img src="<%= request.getContextPath() %>/Remove/Book6.jpg" class="card-img-top" alt="book image">
-			      <div class="card-body">
-			        <h5 class="card-title">Prisoner of Azkaban</h5>
-			        <p class="card-text text-muted mb-0">Item code: 006</p>
-			        <p class="card-text text-muted mb-0">Qtty: 345</p>
-			      </div>
-			      <div class="card-footer bg-white border-top-0 pb-3 card-icons">
-					  <a href="#" title="View"
-						   class="view-circle icon-circle viewItemBtn"
-						   data-name="Prisoner of Azkaban"
-						   data-price="1300.00"
-						   data-quantity="345"
-						   data-image="<%= request.getContextPath() %>/Remove/Book6.jpg">
-						   <i class="bi bi-eye-fill text-primary"></i>
-					  </a>
-					  <a href="#" title="Edit" class="edit-circle icon-circle">
-					    <i class="bi bi-pencil-fill text-success"></i>
-					  </a>
-					  <a href="#" title="Delete" class="delete-circle icon-circle">
-					    <i class="bi bi-trash-fill text-danger"></i>
-					  </a>
-				  </div>
-			    </div>
-			  </div>
-			</div>
-	      
+			<%
+			        }
+			    } else {
+			%>
+			    <p>No items found.</p>
+			<%
+			    }
+			%>
+	      </div>
           
            </main>
            <div id="addItemModalContainer"></div>
@@ -308,6 +197,7 @@
 
 <!-- Bootstrap JS (Optional) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 
   //Add new item popup
@@ -318,6 +208,60 @@
         document.getElementById("addItemModalContainer").innerHTML = html;
         var addItemModal = new bootstrap.Modal(document.getElementById("addItemModal"));
         addItemModal.show();
+     // Attach event listener to the form AFTER the modal content is loaded
+        document.getElementById("addItemForm").addEventListener("submit", function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            const form = this;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success SweetAlert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message
+                    }).then(() => {
+                        // Get the modal element
+                        const addItemModalEl = document.getElementById("addItemModal");
+                        // Get the existing modal instance
+                        const addItemModal = bootstrap.Modal.getInstance(addItemModalEl);
+                        if (addItemModal) {
+                            // Close the modal after the user closes the alert
+                            addItemModal.hide();
+                        }
+                        // Reload the page
+                        window.location.reload();
+                    });
+                } else {
+                    // Show error SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message
+                    });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong while processing your request!'
+                });
+            });
+        });
       })
       .catch(error => console.error('Error loading modal:', error));
   });
@@ -328,14 +272,15 @@
 	    const searchCode = this.value.trim().toLowerCase();
 	
 	    document.querySelectorAll(".card").forEach(card => {
-	      const itemCode = card.querySelector(".card-text").innerText.toLowerCase();
-	      if (itemCode.includes(searchCode)) {
-	        card.closest(".col-lg-3").style.display = "";
-	      } else {
-	        card.closest(".col-lg-3").style.display = "none";
-	      }
+	        const itemCode = card.querySelector(".item-code").innerText.toLowerCase();
+	        if (itemCode.includes(searchCode)) {
+	            card.closest(".col-lg-3").style.display = "";
+	        } else {
+	            card.closest(".col-lg-3").style.display = "none";
+	        }
 	    });
-	  });
+	});
+
 
   
   

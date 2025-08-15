@@ -1,6 +1,9 @@
 <!-- File: addcustomer.jsp -->
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
+<!-- SweetAlert2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
 <style>
 	.modal-content{
 		background-color: #fcc7b6;
