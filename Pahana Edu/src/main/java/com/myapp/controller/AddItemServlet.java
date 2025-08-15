@@ -78,7 +78,7 @@ public class AddItemServlet extends HttpServlet {
         item.setQuantity(quantity);
         item.setItemDescription(description);
         item.setImagePath(UPLOAD_DIR + "/" + fileName);
-        item.setCreatedBy(createdBy); // You can replace with logged-in username
+        item.setCreatedBy(createdBy); 
 
         // Add to DB
         ItemDAO dao = new ItemDAO();

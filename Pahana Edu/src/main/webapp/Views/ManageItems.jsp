@@ -2,6 +2,7 @@
 <!-- Directive Tags -->
 <%@ page import="java.util.List"%>
 <%@ page import="com.myapp.model.ItemBean"%>
+<%@ page import="com.myapp.dao.ItemDAO"%>
 <%@ include file="Sidebar.jsp" %>
 
 <!DOCTYPE html>
@@ -138,54 +139,37 @@
 	      
 	      <!-- Cards Grid -->
 			<div class="row g-4 mt-3">
-			<%
-			    List<ItemBean> itemsList = (List<ItemBean>) request.getAttribute("itemsList");
-			    if (itemsList != null && !itemsList.isEmpty()) {
-			        for (ItemBean item : itemsList) {
-			%>
-			    <div class="col-lg-3 col-md-4 col-sm-6">
-			        <div class="card h-100">
-			            <img src="<%= request.getContextPath() %>/<%= item.getImagePath() %>" class="card-img-top" alt="item image">
-			            <div class="card-body">
-			                <h5 class="card-title"><%= item.getItemName() %></h5>
-			                <p class="card-text text-muted mb-0 item-code">Item code: <%= item.getItemCode() %></p>
-			                <p class="card-text text-muted mb-0 item-quantity">Qtty: <%= item.getQuantity() %></p>
-			                <p class="card-text text-muted mb-0 item-price">Price: $<%= item.getPrice() %></p>
-			            </div>
-			            <div class="card-footer bg-white border-top-0 pb-3 card-icons">
-			                <a href="#" title="View" class="view-circle icon-circle viewItemBtn"
-			                   data-id="<%= item.getItemId() %>"
-			                   data-name="<%= item.getItemName() %>"
-			                   data-price="<%= item.getPrice() %>"
-			                   data-quantity="<%= item.getQuantity() %>"
-			                   data-code="<%= item.getItemCode() %>"
-			                   data-image="<%= request.getContextPath() %>/<%= item.getImagePath() %>">
-			                   <i class="bi bi-eye-fill text-primary"></i>
-			                </a>
-			                <a href="#" title="Edit" class="edit-circle icon-circle editItemBtn"
-			                   data-id="<%= item.getItemId() %>"
-			                   data-name="<%= item.getItemName() %>"
-			                   data-price="<%= item.getPrice() %>"
-			                   data-quantity="<%= item.getQuantity() %>"
-			                   data-code="<%= item.getItemCode() %>"
-			                   data-image="<%= request.getContextPath() %>/<%= item.getImagePath() %>">
-			                   <i class="bi bi-pencil-fill text-success"></i>
-			                </a>
-			                <a href="#" title="Delete" class="delete-circle icon-circle deleteItemBtn"
-			                   data-id="<%= item.getItemId() %>">
-			                   <i class="bi bi-trash-fill text-danger"></i>
-			                </a>
-			            </div>
-			        </div>
-			    </div>
-			<%
-			        }
-			    } else {
-			%>
-			    <p>No items found.</p>
-			<%
-			    }
-			%>
+	        <%
+	          ItemDAO itemDAO = new ItemDAO();
+	          List<ItemBean> items = itemDAO.getAllItems(); // We'll need to create this method
+	          for (ItemBean item : items) {
+	        %>
+	        <div class="col-lg-3 col-md-4 col-sm-6">
+	          <div class="card h-100">
+	            <img src="<%= request.getContextPath() %>/<%= item.getImagePath() %>" class="card-img-top" alt="item image">
+	            <div class="card-body">
+	              <h5 class="card-title"><%= item.getItemName() %></h5>
+	              <p class="card-text text-muted mb-0">Item code: <%= item.getItemCode() %></p>
+	              <p class="card-text text-muted mb-0">Qtty: <%= item.getQuantity() %></p>
+	            </div>
+	            <div class="card-footer bg-white border-top-0 pb-3 card-icons">
+	              <a href="#" title="View" class="view-circle icon-circle viewItemBtn"
+	                 data-name="<%= item.getItemName() %>"
+	                 data-price="<%= item.getPrice() %>"
+	                 data-quantity="<%= item.getQuantity() %>"
+	                 data-image="<%= request.getContextPath() %>/<%= item.getImagePath() %>">
+	                 <i class="bi bi-eye-fill text-primary"></i>
+	              </a>
+	              <a href="#" title="Edit" class="edit-circle icon-circle">
+	                <i class="bi bi-pencil-fill text-success"></i>
+	              </a>
+	              <a href="#" title="Delete" class="delete-circle icon-circle">
+	                <i class="bi bi-trash-fill text-danger"></i>
+	              </a>
+	            </div>
+	          </div>
+	        </div>
+	        <% } %>
 	      </div>
           
            </main>
@@ -267,22 +251,20 @@
   });
   
   
-	//Search functionality by item code
+	//Search by item code
 	  document.getElementById("itemSearchInput").addEventListener("input", function () {
-	    const searchCode = this.value.trim().toLowerCase();
+	      const searchCode = this.value.trim().toLowerCase();
 	
-	    document.querySelectorAll(".card").forEach(card => {
-	        const itemCode = card.querySelector(".item-code").innerText.toLowerCase();
-	        if (itemCode.includes(searchCode)) {
-	            card.closest(".col-lg-3").style.display = "";
-	        } else {
-	            card.closest(".col-lg-3").style.display = "none";
-	        }
-	    });
-	});
+	      document.querySelectorAll(".card").forEach(card => {
+	          const itemCodeElement = card.querySelector(".item-code");
+	          if (itemCodeElement) {
+	              const itemCode = itemCodeElement.innerText.replace("Item code: ", "").toLowerCase();
+	              card.closest(".col-lg-3").style.display = itemCode.includes(searchCode) ? "" : "none";
+	          }
+	      });
+	  });
 
 
-  
   
   //View item popup
   document.querySelectorAll(".viewItemBtn").forEach(btn => {

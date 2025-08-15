@@ -44,7 +44,7 @@ public class ItemDAO {
 	//Fetch the item list
 	public List<ItemBean> getAllItems() {
 	    List<ItemBean> items = new ArrayList<>();
-	    String sql = "SELECT item_id, item_code, item_name, price, quantity, item_description, image_path, created_by FROM items";
+	    String sql = "SELECT * FROM items";
 
 	    try (Connection conn = DBConnection.getConnection();
 	         PreparedStatement ps = conn.prepareStatement(sql);
@@ -70,6 +70,7 @@ public class ItemDAO {
 
 	    return items;
 	}
+
 
 
 }
