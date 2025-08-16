@@ -145,6 +145,19 @@ public class CustomerDAO {
         return false;
     }
     
+    public void updateLoyaltyPoints(String accountNumber, int newPoints) {
+        String sql = "UPDATE customers SET remaining_units = ? WHERE account_number = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, newPoints);
+            ps.setString(2, accountNumber);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    
     // Delete customer
     public boolean deleteCustomer(String accountNumber) {
         String sql = "DELETE FROM customers WHERE account_number = ?";

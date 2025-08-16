@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 public class CustomerBean {
 
+	private int customerId;
 	private String accountNumber;
     private String firstName;
     private String lastName;
@@ -14,7 +15,12 @@ public class CustomerBean {
     private String createdBy;
     private Timestamp createdAt;
     
-    
+    public int getCustomerId() {
+		return customerId;
+	}
+	public void setCustomerId(int customerId) {
+		this.customerId = customerId;
+	}
 	public String getAccountNumber() {
 		return accountNumber;
 	}

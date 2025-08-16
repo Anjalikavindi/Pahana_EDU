@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.sql.Timestamp;
 import java.util.UUID;
+import java.sql.ResultSet;
 
 import com.myapp.model.ItemBean;
 import com.myapp.util.DBConnection;
@@ -108,7 +109,53 @@ public class ItemDAO {
 	    }
 	}
 
+	
+	// Get item id by name
+	public int getItemIdByName(String itemName) {
+	    int itemId = 0;
+	    try (Connection conn = DBConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement("SELECT item_id FROM items WHERE item_name=?")) {
+	        ps.setString(1, itemName);
+	        ResultSet rs = ps.executeQuery();
+	        if (rs.next()) itemId = rs.getInt("item_id");
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return itemId;
+	}
+	
+	public int getItemStock(String itemName) {
+	    int stock = 0;
+	    String sql = "SELECT quantity FROM items WHERE item_name = ?";
+	    try (Connection conn = DBConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setString(1, itemName);
+	        ResultSet rs = ps.executeQuery();
+	        if (rs.next()) {
+	            stock = rs.getInt("quantity");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return stock;
+	}
 
+
+	// Reduce the stock of an item by quantity purchased
+	public boolean reduceItemQuantity(String itemName, int quantitySold) {
+	    String sql = "UPDATE items SET quantity = quantity - ? WHERE item_name = ? AND quantity >= ?";
+	    try (Connection conn = DBConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, quantitySold);
+	        ps.setString(2, itemName);
+	        ps.setInt(3, quantitySold);
+	        int rows = ps.executeUpdate();
+	        return rows > 0; // true if stock was updated successfully
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
 
 	// Delete item by ID
 	public boolean deleteItem(int itemId) {
