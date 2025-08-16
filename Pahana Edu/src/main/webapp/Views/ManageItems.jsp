@@ -303,25 +303,28 @@
   
 	//Edit item popup
 	document.querySelectorAll(".card-icons .edit-circle").forEach(btn => {
-	    btn.addEventListener("click", function (e) {
-	        e.preventDefault();
-	        const card = this.closest(".card");
-	        const name = card.querySelector(".card-title").innerText;
-	        const quantity = card.querySelector(".card-text:nth-child(3)").innerText.replace("Qtty: ", "");
-	        const price = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.price;
-	        const image = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.image;
-	        const itemId = this.closest(".card-icons").querySelector(".delete-circle").dataset.itemId; // Get ID
+	  btn.addEventListener("click", function (e) {
+	    e.preventDefault();
+	    const card = this.closest(".card");
+	    const name = card.querySelector(".card-title").innerText;
+	    const quantity = card.querySelector(".card-text:nth-child(3)").innerText.replace("Qtty: ", "");
+	    const price = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.price;
+	    const image = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.image;
+	    const itemId = this.closest(".card-icons").querySelector(".delete-circle").dataset.itemId;
+	    const description = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.description; // ✅ Added
 
-	        const params = new URLSearchParams({ id: itemId, name, price, quantity, image }); // Include id
-	        fetch("UpdateItemDetails.jsp?" + params.toString())
-	            .then(res => res.text())
-	            .then(html => {
-	                document.getElementById("viewItemModalContainer").innerHTML = html;
-	                const modal = new bootstrap.Modal(document.getElementById("editItemModal"));
-	                modal.show();
-	            })
-	            .catch(err => console.error("Failed to load edit modal:", err));
-	    });
+	    // Change 'id' to 'itemId' to match the servlet's expectation
+	    const params = new URLSearchParams({ itemId: itemId, name, price, quantity, image, description });
+
+	    fetch("UpdateItemDetails.jsp?" + params.toString())
+	      .then(res => res.text())
+	      .then(html => {
+	        document.getElementById("viewItemModalContainer").innerHTML = html;
+	        const modal = new bootstrap.Modal(document.getElementById("editItemModal"));
+	        modal.show();
+	      })
+	      .catch(err => console.error("Failed to load edit modal:", err));
+	  });
 	});
 
   

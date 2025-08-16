@@ -30,6 +30,8 @@
   <link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/css/bootstrap.min.css">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <!-- Sweetalert -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
   <style>
     body {
@@ -252,38 +254,95 @@
 <!-- Placeholder for modal -->
 <div id="addCustomerModalContainer"></div>
 
+
 <!-- Bootstrap JS (Optional) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- SweetAlert2 CSS & JS -->
+<!-- SweetAlert2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  // Function to open add customer modal
-  function openAddCustomerModal() {
-    // Load modal content from addcustomer.jsp
-    fetch('<%= request.getContextPath() %>/Views/AddCustomer.jsp')
-      .then(response => response.text())
-      .then(html => {
-        document.getElementById('addCustomerModalContainer').innerHTML = html;
-
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('addCustomerModal'));
-        modal.show();
-      })
-      .catch(err => console.error('Failed to load modal:', err));
-  }
-
-  // Event listener for main "Add Customers" button
-  document.getElementById('openAddCustomerBtn').addEventListener('click', openAddCustomerModal);
-  
-  // Event listener for "Add your first customer" link (if it exists)
-  document.addEventListener('click', function(e) {
-    if (e.target && e.target.id === 'addFirstCustomerBtn') {
-      e.preventDefault();
-      openAddCustomerModal();
-    }
-  });
-  
+	//Function to open add customer modal
+	function openAddCustomerModal() {
+	  // Load modal content from addcustomer.jsp
+	  fetch('<%= request.getContextPath() %>/Views/AddCustomer.jsp')
+	    .then(response => response.text())
+	    .then(html => {
+	      document.getElementById('addCustomerModalContainer').innerHTML = html;
+	
+	      // Show modal
+	      const modal = new bootstrap.Modal(document.getElementById('addCustomerModal'));
+	      modal.show();
+	
+	      // Attach event listener to the form AFTER the modal is loaded
+	      document.getElementById('addCustomerForm').addEventListener('submit', function(e) {
+	          e.preventDefault();
+	          const form = this;
+	          const formData = new FormData(form);
+	          
+	          // Use URLSearchParams to create a URL-encoded string from the form data
+	          const formBody = new URLSearchParams();
+	          for (const [key, value] of formData.entries()) {
+	              formBody.append(key, value);
+	          }
+	
+	          fetch(form.action, {
+	              method: 'POST',
+	              headers: {
+	                  'Content-Type': 'application/x-www-form-urlencoded'
+	              },
+	              body: formBody.toString() // Send the URL-encoded string
+	          })
+	          .then(response => {
+	              if (!response.ok) {
+	                  return response.json().then(data => {
+	                      const error = new Error(data.message || 'Something went wrong');
+	                      error.status = response.status;
+	                      // Pass the title from the server response to the error object
+	                      error.title = data.title; 
+	                      throw error;
+	                  });
+	              }
+	              return response.json();
+	          })
+	          .then(data => {
+	              Swal.fire({
+	                  icon: 'success',
+	                  title: 'Success',
+	                  text: data.message
+	              }).then(() => {
+	                  const addCustomerModalEl = document.getElementById('addCustomerModal');
+	                  const addCustomerModal = bootstrap.Modal.getInstance(addCustomerModalEl);
+	                  if (addCustomerModal) {
+	                      addCustomerModal.hide();
+	                  }
+	                  window.location.reload();
+	              });
+	          })
+	          .catch(err => {
+	              console.error('Add customer error:', err);
+	              // Use the title from the server response if it exists, otherwise provide a fallback
+	              const swalTitle = err.title || (err.status === 409 ? 'Duplicate Entry' : 'Error');
+	              Swal.fire({
+	                  icon: 'error',
+	                  title: swalTitle,
+	                  text: err.message
+	              });
+	          });
+	      });
+	    })
+	    .catch(err => console.error('Failed to load modal:', err));
+	}
+	
+	// Event listener for main "Add Customers" button
+	document.getElementById('openAddCustomerBtn').addEventListener('click', openAddCustomerModal);
+	
+	// Event listener for "Add your first customer" link (if it exists)
+	document.addEventListener('click', function(e) {
+	  if (e.target && e.target.id === 'addFirstCustomerBtn') {
+	    e.preventDefault();
+	    openAddCustomerModal();
+	  }
+	});
   
   //Search customers
   document.getElementById('searchAccountInput').addEventListener('input', function () {
@@ -326,7 +385,7 @@
   });
   
   
-	//Edit details popup
+//Edit details popup
 	document.querySelectorAll('.edit-icon').forEach(function(icon) {
   icon.addEventListener('click', function () {
     const params = new URLSearchParams({
@@ -341,15 +400,73 @@
     fetch('<%= request.getContextPath() %>/Views/UpdateCustomerDetails.jsp?' + params.toString())
       .then(response => response.text())
       .then(html => {
+        // Corrected variable name from modalContainer to addCustomerModalContainer
         const modalContainer = document.getElementById('addCustomerModalContainer');
         modalContainer.innerHTML = html;
 
         const modal = new bootstrap.Modal(document.getElementById('updateCustomerModal'));
         modal.show();
+        
+        // Attach the submit event listener to the form inside the modal
+        document.getElementById('updateCustomerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+
+            // Convert FormData to URL-encoded string
+            const formBody = new URLSearchParams();
+            for (const [key, value] of formData.entries()) {
+                formBody.append(key, value);
+            }
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formBody.toString() // Send the URL-encoded string
+            })
+            .then(response => {
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        // If response is not ok, throw an error with the parsed data
+                        const error = new Error(data.message);
+                        error.status = response.status;
+                        throw error;
+                    }
+                    // If response is ok, return the parsed data
+                    return data;
+                });
+            })
+            .then(data => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    confirmButtonColor: '#DD4A48'
+                }).then(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('updateCustomerModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    location.reload();
+                });
+            })
+            .catch(err => {
+                console.error('Update error:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: err.message,
+                    confirmButtonColor: '#DD4A48'
+                });
+            });
+        });
       })
       .catch(err => console.error('Failed to load update modal:', err));
   });
-});
+	});
+
 
 	// Delete customer
 	document.querySelectorAll('.delete-icon').forEach(icon => {

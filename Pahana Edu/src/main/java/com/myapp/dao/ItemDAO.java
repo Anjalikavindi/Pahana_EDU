@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import com.myapp.model.ItemBean;
 import com.myapp.util.DBConnection;
-import com.myapp.util.DatabaseConnection;
 
 public class ItemDAO {
 	
@@ -112,18 +111,17 @@ public class ItemDAO {
 
 
 	// Delete item by ID
-    public boolean deleteItem(int itemId) {
-        String sql = "DELETE FROM items WHERE item_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+	public boolean deleteItem(int itemId) {
+	    String sql = "DELETE FROM items WHERE item_id = ?";
+	    try (Connection conn = DBConnection.getConnection();  //Changed here
+	         PreparedStatement stmt = conn.prepareStatement(sql)) {
+	        stmt.setInt(1, itemId);
+	        return stmt.executeUpdate() > 0;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return false;
+	}
 
-            stmt.setInt(1, itemId);
-            return stmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
 }

@@ -1,7 +1,7 @@
 package com.myapp.dao;
 
 import com.myapp.model.CustomerBean;
-import com.myapp.util.DatabaseConnection;
+import com.myapp.util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public class CustomerDAO {
         List<CustomerBean> customers = new ArrayList<>();
         String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers";
         
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             
@@ -41,7 +41,7 @@ public class CustomerDAO {
     public CustomerBean getCustomerByAccountNumber(String accountNumber) {
         String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers WHERE account_number = ?";
         
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, accountNumber);
@@ -67,11 +67,42 @@ public class CustomerDAO {
         return null;
     }
     
+    //Get customer by email address
+    public CustomerBean getCustomerByEmail(String email) {
+        String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers WHERE email = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                CustomerBean customer = new CustomerBean();
+                customer.setAccountNumber(rs.getString("account_number"));
+                customer.setFirstName(rs.getString("first_name"));
+                customer.setLastName(rs.getString("last_name"));
+                customer.setEmail(rs.getString("email"));
+                customer.setContactNumber(rs.getString("contact_number"));
+                customer.setAddress(rs.getString("address"));
+                customer.setRemainingUnits(rs.getInt("remaining_units"));
+                customer.setCreatedBy(rs.getString("created_by"));
+                customer.setCreatedAt(rs.getTimestamp("created_at"));
+                return customer;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    
     // Add new customer
     public boolean addCustomer(CustomerBean customer) {
         String sql = "INSERT INTO customers (account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, customer.getAccountNumber());
@@ -95,7 +126,7 @@ public class CustomerDAO {
     public boolean updateCustomer(CustomerBean customer) {
         String sql = "UPDATE customers SET first_name = ?, last_name = ?, email = ?, contact_number = ?, address = ?, remaining_units = ? WHERE account_number = ?";
         
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, customer.getFirstName());
@@ -118,7 +149,7 @@ public class CustomerDAO {
     public boolean deleteCustomer(String accountNumber) {
         String sql = "DELETE FROM customers WHERE account_number = ?";
         
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, accountNumber);

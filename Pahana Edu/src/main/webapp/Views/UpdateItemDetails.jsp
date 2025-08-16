@@ -1,8 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
+	String itemId = request.getParameter("itemId");
     String name = request.getParameter("name");
     String price = request.getParameter("price");
     String quantity = request.getParameter("quantity");
+    String description = request.getParameter("description");
     String imagePath = request.getParameter("image");
 %>
 
@@ -35,7 +37,7 @@
             </div>
           </div>
           <div class="col-md-6">
-          	<input type="hidden" name="itemId" value="<%= request.getParameter("id") %>">
+          	<input type="hidden" name="itemId" value="<%= itemId %>">
             <div class="mb-3">
               <label for="itemName" class="form-label">Item Name</label>
               <input type="text" class="form-control" id="itemName" name="name" value="<%= name %>" required>
@@ -50,7 +52,7 @@
             </div>
             <div class="mb-3">
 			  <label for="itemDescription" class="form-label">Description</label>
-			  <textarea class="form-control" id="itemDescription" name="description" rows="3" placeholder="Enter item description..."></textarea>
+			  <textarea class="form-control" id="itemDescription" name="description" rows="3"><%= description %></textarea>
 			</div>
           </div>
         </div>

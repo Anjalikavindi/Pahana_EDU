@@ -33,6 +33,9 @@ public class UpdateCustomerServlet extends HttpServlet {
 
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
 		try {
             // Get form parameters
             String accountNumber = request.getParameter("accountNo");
@@ -56,16 +59,16 @@ public class UpdateCustomerServlet extends HttpServlet {
                 contact == null || contact.trim().isEmpty() ||
                 address == null || address.trim().isEmpty()) {
                 
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("All fields are required");
+            	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"message\": \"All fields are required.\"}");
                 return;
             }
             
             // Check if customer exists
             CustomerBean existingCustomer = customerDAO.getCustomerByAccountNumber(accountNumber.trim());
             if (existingCustomer == null) {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("Customer not found");
+            	response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("{\"message\": \"Customer not found.\"}");
                 return;
             }
             
@@ -90,19 +93,17 @@ public class UpdateCustomerServlet extends HttpServlet {
             System.out.println("Update result: " + success);
             
             if (success) {
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("Customer updated successfully");
-                System.out.println("Update successful - sending OK response");
+            	response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("{\"message\": \"Customer updated successfully.\"}");
             } else {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("Failed to update customer");
-                System.out.println("Update failed - sending error response");
+            	response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("{\"message\": \"Failed to update customer.\"}");
             }
             
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error: " + e.getMessage());
+            response.getWriter().write("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
 	}
 

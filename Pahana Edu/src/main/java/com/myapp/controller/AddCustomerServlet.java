@@ -71,10 +71,18 @@ public class AddCustomerServlet extends HttpServlet {
             }
             
             // Check if customer with this account number already exists
-            CustomerBean existingCustomer = customerDAO.getCustomerByAccountNumber(accountNumber.trim());
-            if (existingCustomer != null) {
+            CustomerBean existingCustomerByAccount = customerDAO.getCustomerByAccountNumber(accountNumber.trim());
+            if (existingCustomerByAccount != null) {
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
-                response.getWriter().write("{\"status\":\"error\",\"message\":\"Customer with account number " + accountNumber + " already exists.\"}");
+                response.getWriter().write("{\"status\":\"error\",\"title\":\"Duplicate Account Number\",\"message\":\"Customer with account number " + accountNumber + " already exists.\"}");
+                return;
+            }
+
+            // Check if customer with this email already exists
+            CustomerBean existingCustomerByEmail = customerDAO.getCustomerByEmail(email.trim());
+            if (existingCustomerByEmail != null) {
+                response.setStatus(HttpServletResponse.SC_CONFLICT);
+                response.getWriter().write("{\"status\":\"error\",\"title\":\"Duplicate Email Address\",\"message\":\"Customer with email " + email + " already exists.\"}");
                 return;
             }
             
