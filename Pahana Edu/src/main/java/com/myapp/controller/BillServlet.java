@@ -249,7 +249,13 @@ public class BillServlet extends HttpServlet {
         String[] headers = {"Item", "Quantity", "Unit Price", "Total"};
         for (String header : headers) {
             PdfPCell cell = new PdfPCell(new Phrase(header));
-            cell.setBorder(PdfPCell.NO_BORDER);
+            // Add line above and below header row
+            cell.setBorderWidthTop(1f);
+            cell.setBorderWidthBottom(1f);
+
+            // Remove left/right borders for cleaner look (optional)
+            cell.setBorderWidthLeft(0f);
+            cell.setBorderWidthRight(0f);
             table.addCell(cell);
         }
 
@@ -282,8 +288,8 @@ public class BillServlet extends HttpServlet {
     }
 
     private void sendEmailWithAttachment(String toEmail, String subject, String body, byte[] pdfBytes) throws Exception {
-        final String fromEmail = "anjalikavindy@gmail.com";
-        final String password = "ojeb laeu amrx lpcj";
+        final String fromEmail = "anjalikakavindi21@gmail.com";
+        final String password = "mmzc zuib xjes yfjj";
 
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");

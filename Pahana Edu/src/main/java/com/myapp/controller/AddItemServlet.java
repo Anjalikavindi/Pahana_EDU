@@ -39,7 +39,6 @@ public class AddItemServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         String createdBy = "Unknown"; // default in case user not found
         if (session != null && session.getAttribute("loggedInUser") != null) {
-            // Assuming you store a UserBean object in session
             createdBy = ((com.myapp.model.UserBean) session.getAttribute("loggedInUser")).getUsername();
         }
 
