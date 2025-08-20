@@ -94,8 +94,10 @@ public class ItemDAO {
 	
 	// Update item details
 	public boolean updateItem(ItemBean item) {
-	    StringBuilder sql = new StringBuilder("UPDATE items SET item_name=?, price=?, quantity=?, item_description=?");
-	    if (item.getImagePath() != null && !item.getImagePath().isEmpty()) {
+		StringBuilder sql = new StringBuilder("UPDATE items SET item_name=?, price=?, quantity=?, item_description=?");
+	    boolean hasNewImage = (item.getImagePath() != null && !item.getImagePath().trim().isEmpty());
+	    
+	    if (hasNewImage) {
 	        sql.append(", image_path=?");
 	    }
 	    sql.append(" WHERE item_id=?");
@@ -103,22 +105,32 @@ public class ItemDAO {
 	    try (Connection conn = DBConnection.getConnection();
 	         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
+	        System.out.println("Executing SQL: " + sql.toString());
+	        System.out.println("Parameters: itemName=" + item.getItemName() + 
+	                          ", price=" + item.getPrice() + 
+	                          ", quantity=" + item.getQuantity() + 
+	                          ", description=" + item.getItemDescription() + 
+	                          ", itemId=" + item.getItemId());
+
 	        ps.setString(1, item.getItemName());
 	        ps.setDouble(2, item.getPrice());
 	        ps.setInt(3, item.getQuantity());
 	        ps.setString(4, item.getItemDescription());
 
 	        int index = 5;
-	        if (item.getImagePath() != null && !item.getImagePath().isEmpty()) {
+	        if (hasNewImage) {
 	            ps.setString(index++, item.getImagePath());
+	            System.out.println("New image path: " + item.getImagePath());
 	        }
 
 	        ps.setInt(index, item.getItemId());
 
 	        int rows = ps.executeUpdate();
+	        System.out.println("Rows affected: " + rows);
 	        return rows > 0;
 
 	    } catch (SQLException e) {
+	        System.err.println("Database error in updateItem: " + e.getMessage());
 	        e.printStackTrace();
 	        return false;
 	    }

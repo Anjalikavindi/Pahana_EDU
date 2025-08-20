@@ -328,43 +328,84 @@
 	});
 
   
-//Submit edit item form
-  document.addEventListener("submit", function(e) {
-      if (e.target && e.target.id === "updateItemForm") {
-          e.preventDefault();
-          const form = e.target;
-          const formData = new FormData(form);
+	//Submit edit item form
+	document.addEventListener("submit", function(e) {
+	    if (e.target && e.target.id === "updateItemForm") {
+	        e.preventDefault();
+	        const form = e.target;
+	        const formData = new FormData(form);
+	        
+	        // Debug: Log form data
+	        console.log("Form data being sent:");
+	        for (let [key, value] of formData.entries()) {
+	            console.log(key, value);
+	        }
 
-          fetch(form.action, {
-              method: "POST",
-              body: formData
-          })
-          .then(res => res.json())
-          .then(data => {
-              if (data.success) {
-                  Swal.fire({
-                      icon: 'success',
-                      title: 'Success',
-                      text: data.message
-                  }).then(() => window.location.reload());
-              } else {
-                  Swal.fire({
-                      icon: 'error',
-                      title: 'Error',
-                      text: data.message
-                  });
-              }
-          })
-          .catch(err => {
-              console.error(err);
-              Swal.fire({
-                  icon: 'error',
-                  title: 'Error',
-                  text: 'Something went wrong!'
-              });
-          });
-      }
-  });
+	        // Show loading state
+	        const submitButton = form.querySelector('button[type="submit"]');
+	        const originalText = submitButton.textContent;
+	        submitButton.disabled = true;
+	        submitButton.textContent = 'Updating...';
+
+	        fetch(form.action, {
+	            method: "POST",
+	            body: formData
+	        })
+	        .then(response => {
+	            console.log("Response status:", response.status);
+	            console.log("Response headers:", response.headers);
+	            
+	            // Check if response is JSON
+	            const contentType = response.headers.get("content-type");
+	            if (!contentType || !contentType.includes("application/json")) {
+	                throw new Error("Server did not return JSON response");
+	            }
+	            
+	            return response.json();
+	        })
+	        .then(data => {
+	            console.log("Response data:", data);
+	            
+	            // Reset button state
+	            submitButton.disabled = false;
+	            submitButton.textContent = originalText;
+	            
+	            if (data.success) {
+	                Swal.fire({
+	                    icon: 'success',
+	                    title: 'Success',
+	                    text: data.message
+	                }).then(() => {
+	                    // Close modal and reload page
+	                    const modal = bootstrap.Modal.getInstance(document.getElementById("editItemModal"));
+	                    if (modal) {
+	                        modal.hide();
+	                    }
+	                    window.location.reload();
+	                });
+	            } else {
+	                Swal.fire({
+	                    icon: 'error',
+	                    title: 'Error',
+	                    text: data.message || 'Failed to update item'
+	                });
+	            }
+	        })
+	        .catch(err => {
+	            console.error("Fetch error:", err);
+	            
+	            // Reset button state
+	            submitButton.disabled = false;
+	            submitButton.textContent = originalText;
+	            
+	            Swal.fire({
+	                icon: 'error',
+	                title: 'Error',
+	                text: 'Something went wrong while updating the item: ' + err.message
+	            });
+	        });
+	    }
+	});
 
   
 //Delete item popup
