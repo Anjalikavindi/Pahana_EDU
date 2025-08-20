@@ -36,6 +36,7 @@
               <input type="file" class="form-control" id="itemImage" name="itemImage">
             </div>
           </div>
+          
           <div class="col-md-6">
           	<input type="hidden" name="itemId" value="<%= itemId %>">
             <div class="mb-3">

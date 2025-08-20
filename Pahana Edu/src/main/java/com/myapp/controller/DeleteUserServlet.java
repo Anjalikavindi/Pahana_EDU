@@ -20,8 +20,8 @@ import com.myapp.util.PasswordUtil;
 import com.myapp.util.JsonUtil;
 
 
-@WebServlet("/UserManagementServlet")
-public class UserManagementServlet extends HttpServlet {
+@WebServlet("/DeleteUserServlet")
+public class DeleteUserServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private UserDAO userDAO;
     private RoleDAO roleDAO;
@@ -32,7 +32,7 @@ public class UserManagementServlet extends HttpServlet {
     }
 
     
-    public UserManagementServlet() {
+    public DeleteUserServlet() {
         super();
     }
 
@@ -112,7 +112,7 @@ public class UserManagementServlet extends HttpServlet {
                     UserBean newUser = new UserBean();
                     newUser.setUsername(username);
                     newUser.setFullName(fullName);
-                    newUser.setPasswordHash(password); // Will be hashed in DAO if needed
+                    newUser.setPasswordHash(password); 
                     newUser.setRoleId(roleId);
                     newUser.setStatus(status);
                     
@@ -133,7 +133,7 @@ public class UserManagementServlet extends HttpServlet {
                     user.setUsername(username);
                     user.setFullName(fullName);
                     if (password != null && !password.trim().isEmpty()) {
-                        user.setPasswordHash(password); // Will be hashed in DAO if needed
+                        user.setPasswordHash(password); 
                     }
                     user.setRoleId(roleId);
                     user.setStatus(status);

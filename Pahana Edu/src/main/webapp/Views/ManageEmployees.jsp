@@ -227,9 +227,6 @@
               <td>
                 <!-- Action buttons (Edit, Delete) -->
                 <div class="btn-group" role="group">
-                  <button type="button" class="btn btn-sm btn-primary" onclick="editUser('<%= user.getUserId() %>')">
-                    <i class="bi bi-pencil"></i> Edit
-                  </button>
                   <button type="button" class="btn btn-sm btn-danger" onclick="deleteUser('<%= user.getUserId() %>')" data-user-id="<%= user.getUserId() %>">
                     <i class="bi bi-trash"></i> Delete
                   </button>
@@ -258,7 +255,8 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   // Debug: Check user IDs when page loads
   document.addEventListener('DOMContentLoaded', function() {
@@ -367,7 +365,7 @@
     const status = isActive ? 'active' : 'inactive';
     
     // Send AJAX request to update user status
-    fetch('<%= request.getContextPath() %>/UserManagementServlet', {
+    fetch('<%= request.getContextPath() %>/DeleteUserServlet', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -414,50 +412,74 @@
     window.location.href = '<%= request.getContextPath() %>/Views/UpdateEmployeeDetails.jsp?userId=' + userId;
   }
 
-  // Delete user function
+  //Delete user function with SweetAlert2
   function deleteUser(userId) {
-    // Debug logging
-    console.log('deleteUser called with userId:', userId);
-    console.log('userId type:', typeof userId);
-    
-    // Validate userId
-    if (!userId || userId === '' || userId === 'null' || userId === 'undefined') {
-      alert('Error: Invalid user ID. Cannot delete employee.');
-      console.error('Invalid userId:', userId);
-      return;
-    }
-    
-    if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
-      const requestBody = 'action=delete&userId=' + userId;
-      console.log('Request body:', requestBody);
-      
-      fetch('<%= request.getContextPath() %>/UserManagementServlet', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: requestBody
-      })
-      .then(response => {
-        console.log('Response status:', response.status);
-        return response.json();
-      })
-      .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-          alert('Employee deleted successfully!');
-          // Reload the page to refresh the table
-          location.reload();
-        } else {
-          alert('Failed to delete employee: ' + data.message);
-        }
-      })
-      .catch(error => {
-        console.error('Error deleting employee:', error);
-        alert('Error deleting employee. Please try again.');
+      console.log('deleteUser called with userId:', userId);
+      console.log('userId type:', typeof userId);
+
+      // Validate userId
+      if (!userId || userId === '' || userId === 'null' || userId === 'undefined') {
+          Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Invalid user ID. Cannot delete employee.'
+          });
+          console.error('Invalid userId:', userId);
+          return;
+      }
+
+      // SweetAlert confirmation
+      Swal.fire({
+          title: 'Are you sure?',
+          text: "This action cannot be undone!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+          if (result.isConfirmed) {
+              const requestBody = 'action=delete&userId=' + userId;
+              console.log('Request body:', requestBody);
+
+              fetch('<%= request.getContextPath() %>/DeleteUserServlet', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: requestBody
+              })
+              .then(response => response.json())
+              .then(data => {
+                  console.log('Response data:', data);
+                  if (data.success) {
+                      Swal.fire({
+                          icon: 'success',
+                          title: 'Deleted!',
+                          text: 'Employee deleted successfully.',
+                          timer: 2000,
+                          showConfirmButton: false
+                      }).then(() => {
+                          location.reload(); // Refresh table
+                      });
+                  } else {
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Failed',
+                          text: 'Failed to delete employee: ' + data.message
+                      });
+                  }
+              })
+              .catch(error => {
+                  console.error('Error deleting employee:', error);
+                  Swal.fire({
+                      icon: 'error',
+                      title: 'Error',
+                      text: 'Error deleting employee. Please try again.'
+                  });
+              });
+          }
       });
-    }
   }
+
 </script>
 </body>
 </html>

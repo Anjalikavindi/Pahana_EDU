@@ -21,16 +21,58 @@
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        body { min-height: 100vh; background-color: #F5EEDC; }
-        .content { padding: 2rem; margin-left: 90px; width: calc(100% - 90px); }
-        .billing-card { background-color: #f9d7d6; padding: 30px; border-radius: 15px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); }
-        .form-section-title { font-weight: 600; font-size: 1.2rem; margin-bottom: 15px; }
-        .table thead th { background-color: #DD4A48; color: #ffffff; }
-        .table-wrapper { border-radius: 15px; overflow: hidden; }
-        .table tbody tr:nth-child(odd) { background-color: #f2c1bf; }
-        .table tbody tr:nth-child(even) { background-color: #f9d7d6; }
-        .summary-table { background-color: #f9d7d6; }
-        .summary-table th, .summary-table td, .summary-table tr { background-color: #f9d7d6 !important; }
+        body { 
+        min-height: 100vh; 
+        background-color: #F5EEDC; 
+        }
+        
+        .content { 
+        padding: 2rem; 
+        margin-left: 90px; 
+        width: calc(100% - 90px); 
+        }
+        
+        .billing-card { 
+        background-color: #f9d7d6; 
+        padding: 30px; 
+        border-radius: 15px; 
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); 
+        }
+        
+        .form-section-title { 
+        font-weight: 600; 
+        font-size: 1.2rem; 
+        margin-bottom: 15px; 
+        }
+        
+        .table thead th { 
+        background-color: #DD4A48; 
+        color: #ffffff; 
+        }
+        
+        .table-wrapper { 
+        border-radius: 15px; 
+        overflow: hidden; 
+        }
+        
+        .table tbody tr:nth-child(odd) {
+         background-color: #f2c1bf; 
+         }
+         
+        .table tbody tr:nth-child(even) {
+         background-color: #f9d7d6; 
+         }
+         
+        .summary-table { 
+        background-color: #f9d7d6; 
+        }
+        
+        .summary-table th, 
+        .summary-table td, 
+        .summary-table tr { 
+        background-color: #f9d7d6 !important; 
+        }
+        
     </style>
 </head>
 <body>
@@ -43,7 +85,7 @@
 
                 <!-- Customer Selection Form (GET) -->
                 <div class="form-section-title">Customer Details</div>
-                <form action="<%= request.getContextPath() %>/BillServlet" method="get">
+                <form action="<%= request.getContextPath() %>/BillServlet" method="get" id="customerForm">
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="accountNumber" class="form-label">Account Number</label>
@@ -164,6 +206,78 @@
 <!-- JS Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+	window.onload = function() {
+	    <% if (session.getAttribute("billSuccess") != null) { %>
+	        Swal.fire({
+	            title: 'Bill Generated!',
+	            text: 'The bill was generated successfully.',
+	            icon: 'success',
+	            confirmButtonColor: '#d33'
+	        }).then(() => {
+	            resetAllForms(); // reset forms after user closes the alert
+	        });
+	        <% session.removeAttribute("billSuccess"); %>
+	    <% } %>
+
+	    // Error message
+	    <% if (session.getAttribute("billError") != null) { %>
+	        Swal.fire({
+	            title: 'Error!',
+	            text: '<%= session.getAttribute("billError") %>',
+	            icon: 'error',
+	            confirmButtonColor: '#d33'
+	        });
+	        <% session.removeAttribute("billError"); %>
+	    <% } %>
+	};
+	function resetAllForms() {
+        // Reset customer selection form
+        document.getElementById("customerForm").reset();
+        document.getElementById("accountNumber").selectedIndex = 0;
+        document.getElementById("customerName").value = "";
+        document.getElementById("loyaltyPointsCustomer").value = "0";
+        
+        // Reset bill form
+        document.getElementById("billForm").reset();
+        
+        // Clear all summary fields
+        document.getElementById("subtotal").value = "";
+        document.getElementById("grandTotal").value = "";
+        document.getElementById("amountPaid").value = "";
+        document.getElementById("loyaltyPoints").value = "";
+        document.getElementById("balance").value = "";
+        
+        // Clear all hidden fields
+        document.getElementById("hiddenSubtotal").value = "";
+        document.getElementById("hiddenGrandTotal").value = "";
+        document.getElementById("hiddenAmountPaid").value = "";
+        document.getElementById("hiddenLoyaltyPoints").value = "";
+        document.getElementById("hiddenBalance").value = "";
+        
+        // Reset items table to have only one empty row
+        const tbody = document.getElementById('itemsTable').querySelector('tbody');
+        tbody.innerHTML = `
+            <tr>
+                <td>
+                    <select class="form-select" name="item[]" onchange="setPrice(this)">
+                        <option value="">-- Select Item --</option>
+                        <% for(ItemBean item : itemList) { %>
+                            <option value="<%= item.getItemName() %>" 
+                                    data-price="<%= item.getPrice() %>" 
+                                    data-stock="<%= item.getQuantity() %>">
+                                <%= item.getItemName() %>
+                            </option>
+                        <% } %>
+                    </select>
+                </td>
+                <td><input type="number" class="form-control qty" name="quantity[]" oninput="calculateRowTotal(this)"></td>
+                <td><input type="number" class="form-control price" name="price[]" oninput="calculateRowTotal(this)"></td>
+                <td><input type="text" class="form-control total" name="total[]" readonly></td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash-fill"></i></button>
+                </td>
+            </tr>`;
+    }
     function calculateRowTotal(input) {
         const row = input.closest('tr');
         const qty = parseFloat(row.querySelector('.qty').value) || 0;

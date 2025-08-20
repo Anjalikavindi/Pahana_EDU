@@ -76,6 +76,21 @@ public class ItemDAO {
 	    return items;
 	}
 	
+	// Get total items count for dashboard card
+	public int getItemCount() {
+	    String sql = "SELECT COUNT(*) AS total FROM items";
+	    try (Connection conn = DBConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql);
+	         ResultSet rs = ps.executeQuery()) {
+	        if (rs.next()) {
+	            return rs.getInt("total");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return 0;
+	}
+
 	
 	// Update item details
 	public boolean updateItem(ItemBean item) {

@@ -43,7 +43,7 @@
     <!-- Dropdown menu -->
     <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-1 bg-dark">
       <li>
-        <a class="dropdown-item text-light" href="<%= request.getContextPath() %>/Profile.jsp">
+        <a class="dropdown-item text-light" href="<%= request.getContextPath() %>/Views/Profile.jsp">
           <i class="bi bi-person me-2"></i> Profile
         </a>
       </li>

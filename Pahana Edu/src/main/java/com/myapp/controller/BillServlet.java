@@ -9,7 +9,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;   
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.io.ByteArrayOutputStream;
+import javax.mail.*;
+import javax.mail.internet.*;
+import javax.mail.util.ByteArrayDataSource;
+import javax.activation.*;
 
+import com.myapp.model.BillItemBean;
 import com.myapp.dao.BillDAO;
 import com.myapp.dao.CustomerDAO;
 import com.myapp.dao.ItemDAO;
@@ -18,6 +26,9 @@ import com.myapp.model.CustomerBean;
 import com.myapp.model.UserBean;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
+
+import java.util.Properties;
+
 
 
 @WebServlet("/BillServlet")
@@ -51,171 +62,284 @@ public class BillServlet extends HttpServlet {
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	 String accountNumber = request.getParameter("accountNumber");
-         CustomerBean customer = customerDAO.getCustomerByAccountNumber(accountNumber);
+    	HttpSession session = request.getSession(false);
 
-         String[] items = request.getParameterValues("item[]");
-         String[] quantities = request.getParameterValues("quantity[]");
-         String[] prices = request.getParameterValues("price[]");
-         String[] totals = request.getParameterValues("total[]");
+        String accountNumber = request.getParameter("accountNumber");
+        CustomerBean customer = customerDAO.getCustomerByAccountNumber(accountNumber);
+        if (customer == null) {
+            setErrorAndRedirect(request, response, "Please select a valid customer before generating the bill.");
+            return;
+        }
 
-         String subtotal = request.getParameter("subtotal");
-         String grandTotal = request.getParameter("grandTotal");
-         String amountPaid = request.getParameter("amountPaid");
-         String loyaltyPointsUsed = request.getParameter("loyaltyPoints");
-         String balance = request.getParameter("balance");
+        String[] items = request.getParameterValues("item[]");
+        String[] quantities = request.getParameterValues("quantity[]");
+        String[] prices = request.getParameterValues("price[]");
+        String[] totals = request.getParameterValues("total[]");
 
-         // ===== Update Item Quantities =====
-         if (items != null && quantities != null) {
-             for (int i = 0; i < items.length; i++) {
-                 String itemName = items[i];
-                 int qty = Integer.parseInt(quantities[i]);
+        String subtotalStr = request.getParameter("subtotal");
+        String grandTotalStr = request.getParameter("grandTotal");
+        String amountPaidStr = request.getParameter("amountPaid");
+        String loyaltyPointsUsedStr = request.getParameter("loyaltyPoints");
+        String balanceStr = request.getParameter("balance");
 
-                 int currentStock = itemDAO.getItemStock(itemName);
-                 if (qty > currentStock) {
-                     throw new ServletException("Not enough stock for item: " + itemName);
-                 }
+        // ===== Validate items =====
+        if (!hasValidItem(items, quantities)) {
+            setErrorAndRedirect(request, response, "Please select at least one item with a quantity greater than 0.");
+            return;
+        }
 
-                 boolean updated = itemDAO.reduceItemQuantity(itemName, qty);
-                 if (!updated) {
-                     throw new ServletException("Failed to update stock for item: " + itemName);
-                 }
-             }
-         }
+        double subtotal = parseDouble(subtotalStr);
+        double grandTotal = parseDouble(grandTotalStr);
+        double amountPaid = parseDouble(amountPaidStr);
+        double loyaltyPointsUsed = parseDouble(loyaltyPointsUsedStr);
+        double balance = parseDouble(balanceStr);
 
-         response.setContentType("application/pdf");
-         response.setHeader("Content-Disposition", "attachment; filename=bill.pdf");
+        if ((amountPaid + loyaltyPointsUsed) < grandTotal) {
+            setErrorAndRedirect(request, response, "Payment (Amount + Loyalty Points) must be greater than or equal to the Grand Total.");
+            return;
+        }
 
-         try {
-             Document document = new Document();
-             PdfWriter.getInstance(document, response.getOutputStream());
-             document.open();
+        // ===== Update Item Stock =====
+        if (!updateStock(items, quantities, request, response)) return;
 
-             // Add Logo
-             try {
-                 String logoPath = getServletContext().getRealPath("/Images/Logo.png");
-                 Image logo = Image.getInstance(logoPath);
-                 logo.scaleToFit(120, 120);
-                 logo.setAlignment(Element.ALIGN_CENTER);
-                 document.add(logo);
-                 document.add(new Paragraph(" "));
-             } catch (Exception imgEx) {
-                 System.out.println("Logo not found: " + imgEx.getMessage());
-             }
+        // ===== Prepare BillBean =====
+        String cashierName = "";
+        if (session != null) {
+            UserBean cashier = (UserBean) session.getAttribute("loggedInUser");
+            if (cashier != null) cashierName = cashier.getFullName();
+        }
 
-             // Title
-             Font bold = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
-             Paragraph title = new Paragraph("Invoice", bold);
-             title.setAlignment(Element.ALIGN_CENTER);
-             document.add(title);
-             document.add(new Paragraph(" "));
+        BillBean bill = new BillBean();
+        bill.setCustomerId(customer.getCustomerId());
+        bill.setSubtotal(subtotal);
+        bill.setGrandTotal(grandTotal);
+        bill.setAmountPaid(amountPaid);
+        bill.setLoyaltyPointsUsed(loyaltyPointsUsed);
+        bill.setBalance(balance);
+        bill.setCreatedBy(cashierName);
 
-             // Customer Details
-             document.add(new Paragraph("Customer: " + customer.getFirstName() + " " + customer.getLastName()));
-             document.add(new Paragraph("Account No: " + customer.getAccountNumber()));
-             document.add(new Paragraph("Email: " + customer.getEmail()));
-             document.add(new Paragraph("Contact: " + customer.getContactNumber()));
-             document.add(new Paragraph(" "));
+        List<BillItemBean> billItems = new ArrayList<>();
+        if (items != null && quantities != null && prices != null) {
+            for (int i = 0; i < items.length; i++) {
+                BillItemBean billItem = new BillItemBean();
+                int itemId = itemDAO.getItemIdByName(items[i]);
+                billItem.setItemId(itemId);
+                billItem.setQuantity(parseInt(quantities[i]));
+                billItem.setUnitPrice(parseDouble(prices[i]));
+                billItem.setTotalPrice(parseDouble(totals[i]));
+                billItems.add(billItem);
+            }
+        }
+        bill.setItems(billItems);
 
-             // Current Date
-             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-             String currentDate = dtf.format(LocalDateTime.now());
-             document.add(new Paragraph("Date: " + currentDate));
+        // ===== Save Bill =====
+        BillDAO billDAO = new BillDAO();
+        boolean saved = billDAO.saveBill(bill);
+        if (!saved) {
+            setErrorAndRedirect(request, response, "Failed to save bill to database.");
+            return;
+        }
 
-             // Cashier from Session
-             HttpSession session = request.getSession(false);
-             String cashierName = "";
-             if (session != null) {
-                 UserBean cashier = (UserBean) session.getAttribute("loggedInUser");
-                 if (cashier != null) {
-                     cashierName = cashier.getFullName();
-                     document.add(new Paragraph("Cashier: " + cashierName));
-                     document.add(new Paragraph(" "));
-                 }
-             }
+        // ===== Generate PDF and update loyalty points =====
+        try {
+            int earnedPoints = (int) (grandTotal / 100);
+            int newPoints = Math.max(0, customer.getRemainingUnits() - (int) loyaltyPointsUsed + earnedPoints);
 
-             // Table for Items
-             PdfPTable table = new PdfPTable(4);
-             table.setWidthPercentage(100);
+            customerDAO.updateLoyaltyPoints(accountNumber, newPoints);
 
-             // Header Line
-             PdfPCell topLineCell = new PdfPCell(new Phrase(""));
-             topLineCell.setColspan(4);
-             topLineCell.setBorderWidthBottom(1f);
-             topLineCell.setBorder(Rectangle.BOTTOM);
-             table.addCell(topLineCell);
+            ByteArrayOutputStream baos = generatePDF(customer, cashierName, items, quantities, prices, totals, subtotal, grandTotal, amountPaid, loyaltyPointsUsed, earnedPoints, balance);
 
-             // Table Headers
-             String[] headers = {"Item", "Quantity", "Unit Price", "Total"};
-             for (String header : headers) {
-                 PdfPCell cell = new PdfPCell(new Phrase(header));
-                 cell.setBorder(PdfPCell.NO_BORDER);
-                 cell.setHorizontalAlignment(Element.ALIGN_LEFT);
-                 table.addCell(cell);
-             }
+            // Send email (but don't block the response if it fails)
+            try {
+                sendEmailWithAttachment(customer.getEmail(), "Your Invoice", "Please find attached your invoice.", baos.toByteArray());
+            } catch (Exception emailException) {
+                System.err.println("Failed to send email: " + emailException.getMessage());
+                // Continue with PDF download even if email fails
+            }
 
-             // Bottom Line Header
-             PdfPCell bottomLineCell = new PdfPCell(new Phrase(""));
-             bottomLineCell.setColspan(4);
-             bottomLineCell.setBorderWidthTop(1f);
-             bottomLineCell.setBorder(Rectangle.TOP);
-             table.addCell(bottomLineCell);
+            // Send PDF to browser - this commits the response
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=bill_" + customer.getAccountNumber() + ".pdf");
+            response.getOutputStream().write(baos.toByteArray());
+            response.getOutputStream().flush();
+            
+            // REMOVED: Cannot redirect after response is committed
+            // The PDF download itself serves as the success indicator
+            // If you need success tracking, use AJAX or a different approach
 
-             // Table Content
-             if (items != null) {
-                 for (int i = 0; i < items.length; i++) {
-                     table.addCell(new PdfPCell(new Phrase(items[i])));
-                     table.addCell(new PdfPCell(new Phrase(quantities[i])));
-                     table.addCell(new PdfPCell(new Phrase(prices[i])));
-                     table.addCell(new PdfPCell(new Phrase(totals[i])));
-                 }
-             }
-             document.add(table);
-             document.add(new Paragraph(" "));
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Only redirect if response hasn't been committed yet
+            if (!response.isCommitted()) {
+                setErrorAndRedirect(request, response, "Error generating or sending bill: " + e.getMessage());
+            } else {
+                // Log the error since we can't redirect
+                System.err.println("Error after response committed: " + e.getMessage());
+            }
+        }
+    }
 
-             // Loyalty Points Calculation
-             int earnedPoints = 0;
-             if (grandTotal != null && !grandTotal.isEmpty()) {
-                 earnedPoints = (int) (Double.parseDouble(grandTotal) / 100);
-                 int usedPoints = (loyaltyPointsUsed != null && !loyaltyPointsUsed.isEmpty()) ? Integer.parseInt(loyaltyPointsUsed) : 0;
-                 int newPoints = customer.getRemainingUnits() - usedPoints + earnedPoints;
-                 if (newPoints < 0) newPoints = 0;
-                 // Update in DB
-                 customerDAO.updateLoyaltyPoints(accountNumber, newPoints);
-             }
+    private boolean hasValidItem(String[] items, String[] quantities) {
+        if (items == null || quantities == null) return false;
+        for (int i = 0; i < items.length; i++) {
+            if (items[i] != null && !items[i].isEmpty()) {
+                int qty = parseInt(quantities[i]);
+                if (qty > 0) return true;
+            }
+        }
+        return false;
+    }
 
-             // Summary
-             document.add(new Paragraph("Subtotal: Rs. " + subtotal));
-             document.add(new Paragraph("Grand Total: Rs. " + grandTotal));
-             document.add(new Paragraph("Amount Paid: Rs. " + amountPaid));
-             document.add(new Paragraph("Loyalty Points Used: " + loyaltyPointsUsed));
-             document.add(new Paragraph("Loyalty Points Earned: " + earnedPoints));
-             document.add(new Paragraph("Balance: Rs. " + balance));
-             document.add(new Paragraph(" "));
+    private boolean updateStock(String[] items, String[] quantities, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        for (int i = 0; i < items.length; i++) {
+            String itemName = items[i];
+            int qty = parseInt(quantities[i]);
+            int currentStock = itemDAO.getItemStock(itemName);
+            if (qty > currentStock) {
+                setErrorAndRedirect(request, response, "Not enough stock for item: " + itemName);
+                return false;
+            }
+            boolean updated = itemDAO.reduceItemQuantity(itemName, qty);
+            if (!updated) {
+                setErrorAndRedirect(request, response, "Failed to update stock for item: " + itemName);
+                return false;
+            }
+        }
+        return true;
+    }
 
-             // Thank You Note
-             Font italic = new Font(Font.FontFamily.HELVETICA, 12, Font.ITALIC);
-             Paragraph thankYou = new Paragraph("Thank you. Please come again!", italic);
-             thankYou.setAlignment(Element.ALIGN_CENTER);
-             document.add(thankYou);
+    private ByteArrayOutputStream generatePDF(CustomerBean customer, String cashierName, String[] items, String[] quantities, String[] prices, String[] totals,
+                                              double subtotal, double grandTotal, double amountPaid, double loyaltyPointsUsed, int loyaltyPointsEarned, double balance) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Document document = new Document();
+        PdfWriter.getInstance(document, baos);
+        document.open();
 
-             // Save Bill to Database
-             BillBean bill = new BillBean();
-             bill.setCustomerId(customer.getCustomerId());
-             bill.setSubtotal(Double.parseDouble(subtotal));
-             bill.setGrandTotal(Double.parseDouble(grandTotal));
-             bill.setAmountPaid(Double.parseDouble(amountPaid));
-             bill.setLoyaltyPointsUsed((loyaltyPointsUsed != null && !loyaltyPointsUsed.isEmpty()) ? Double.parseDouble(loyaltyPointsUsed) : 0.0);
-             bill.setBalance(Double.parseDouble(balance));
-             bill.setCreatedBy(cashierName);
+        try {
+            String logoPath = getServletContext().getRealPath("/Images/Logo.png");
+            Image logo = Image.getInstance(logoPath);
+            logo.scaleToFit(120, 120);
+            logo.setAlignment(Element.ALIGN_CENTER);
+            document.add(logo);
+            document.add(new Paragraph(" "));
+        } catch (Exception e) {
+            System.out.println("Logo not found: " + e.getMessage());
+        }
 
-             BillDAO billDAO = new BillDAO();
-             billDAO.saveBill(bill);
+        Font bold = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
+        Paragraph title = new Paragraph("Invoice", bold);
+        title.setAlignment(Element.ALIGN_CENTER);
+        document.add(title);
+        document.add(new Paragraph(" "));
 
-             document.close();
+        document.add(new Paragraph("Customer: " + customer.getFirstName() + " " + customer.getLastName()));
+        document.add(new Paragraph("Account No: " + customer.getAccountNumber()));
+        document.add(new Paragraph("Email: " + customer.getEmail()));
+        document.add(new Paragraph("Contact: " + customer.getContactNumber()));
+        document.add(new Paragraph(" "));
 
-         } catch (Exception e) {
-             e.printStackTrace();
-         }
-     }
- }
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        String currentDate = dtf.format(LocalDateTime.now());
+        document.add(new Paragraph("Date: " + currentDate));
+        document.add(new Paragraph("Cashier: " + cashierName));
+        document.add(new Paragraph(" "));
+
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100);
+        String[] headers = {"Item", "Quantity", "Unit Price", "Total"};
+        for (String header : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(header));
+            cell.setBorder(PdfPCell.NO_BORDER);
+            table.addCell(cell);
+        }
+
+        if (items != null) {
+            for (int i = 0; i < items.length; i++) {
+                table.addCell(new PdfPCell(new Phrase(items[i]))).setBorder(PdfPCell.NO_BORDER);
+                table.addCell(new PdfPCell(new Phrase(quantities[i]))).setBorder(PdfPCell.NO_BORDER);
+                table.addCell(new PdfPCell(new Phrase(prices[i]))).setBorder(PdfPCell.NO_BORDER);
+                table.addCell(new PdfPCell(new Phrase(totals[i]))).setBorder(PdfPCell.NO_BORDER);
+            }
+        }
+        document.add(table);
+        document.add(new Paragraph(" "));
+
+        document.add(new Paragraph("Subtotal: Rs. " + subtotal));
+        document.add(new Paragraph("Grand Total: Rs. " + grandTotal));
+        document.add(new Paragraph("Amount Paid: Rs. " + amountPaid));
+        document.add(new Paragraph("Loyalty Points Used: " + loyaltyPointsUsed));
+        document.add(new Paragraph("Loyalty Points Earned: " + loyaltyPointsEarned));
+        document.add(new Paragraph("Balance: Rs. " + balance));
+        document.add(new Paragraph(" "));
+
+        Font italic = new Font(Font.FontFamily.HELVETICA, 12, Font.ITALIC);
+        Paragraph thankYou = new Paragraph("Thank you. Please come again!", italic);
+        thankYou.setAlignment(Element.ALIGN_CENTER);
+        document.add(thankYou);
+
+        document.close();
+        return baos;
+    }
+
+    private void sendEmailWithAttachment(String toEmail, String subject, String body, byte[] pdfBytes) throws Exception {
+        final String fromEmail = "anjalikavindy@gmail.com";
+        final String password = "ojeb laeu amrx lpcj";
+
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
+        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(fromEmail, password);
+            }
+        });
+
+        session.setDebug(true);
+
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(fromEmail));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+        message.setSubject(subject);
+
+        MimeBodyPart textPart = new MimeBodyPart();
+        textPart.setText(body);
+
+        MimeBodyPart attachmentPart = new MimeBodyPart();
+        DataSource source = new ByteArrayDataSource(pdfBytes, "application/pdf");
+        attachmentPart.setDataHandler(new DataHandler(source));
+        attachmentPart.setFileName("Invoice.pdf");
+
+        Multipart multipart = new MimeMultipart();
+        multipart.addBodyPart(textPart);
+        multipart.addBodyPart(attachmentPart);
+
+        message.setContent(multipart);
+        Transport.send(message);
+    }
+
+    private void setErrorAndRedirect(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+        HttpSession session = request.getSession();
+        session.setAttribute("billError", message);
+        response.sendRedirect(request.getContextPath() + "/BillServlet");
+    }
+
+    private int parseInt(String str) {
+        try {
+            return Integer.parseInt(str);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private double parseDouble(String str) {
+        try {
+            return Double.parseDouble(str);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+}

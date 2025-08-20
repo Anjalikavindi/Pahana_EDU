@@ -97,6 +97,23 @@ public class UserDAO {
         return users;
     }
     
+    
+    // Get total users count for dashboard card
+    public int getUserCount() {
+        String sql = "SELECT COUNT(*) AS total FROM users";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    
     public boolean addUser(UserBean user) {
         String sql = "INSERT INTO users (username, password_hash, full_name, role_id, status) VALUES (?, ?, ?, ?, ?);";
         try (Connection conn = DBConnection.getConnection();

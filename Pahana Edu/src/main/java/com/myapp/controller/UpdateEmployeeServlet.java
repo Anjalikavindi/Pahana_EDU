@@ -71,7 +71,7 @@ public class UpdateEmployeeServlet extends HttpServlet {
             if (password != null && !password.trim().isEmpty()) {
                 if (!password.equals(confirmPassword)) {
                     request.setAttribute("errorMessage", "Passwords do not match!");
-                    request.getRequestDispatcher("/Views/UpdateEmployeeDetails.jsp?userId=" + userId).forward(request, response);
+                    request.getRequestDispatcher("/Views/Profile.jsp?userId=" + userId).forward(request, response);
                     return;
                 }
             }
@@ -94,7 +94,7 @@ public class UpdateEmployeeServlet extends HttpServlet {
                 roleId = 3;
             } else {
                 request.setAttribute("errorMessage", "Invalid role selected! Valid roles are: Admin, Cashier, Inventory Manager");
-                request.getRequestDispatcher("/Views/UpdateEmployeeDetails.jsp?userId=" + userId).forward(request, response);
+                request.getRequestDispatcher("/Views/Profile.jsp?userId=" + userId).forward(request, response);
                 return;
             }
             
@@ -154,10 +154,10 @@ public class UpdateEmployeeServlet extends HttpServlet {
             
             if (success) {
                 request.setAttribute("successMessage", "Employee updated successfully!");
-                request.getRequestDispatcher("/Views/UpdateEmployeeDetails.jsp?userId=" + userId).forward(request, response);
+                request.getRequestDispatcher("/Views/Profile.jsp?userId=" + userId).forward(request, response);
             } else {
                 request.setAttribute("errorMessage", "Failed to update employee. Username might already exist.");
-                request.getRequestDispatcher("/Views/UpdateEmployeeDetails.jsp?userId=" + userId).forward(request, response);
+                request.getRequestDispatcher("/Views/Profile.jsp?userId=" + userId).forward(request, response);
             }
             
         } catch (Exception e) {
@@ -165,7 +165,7 @@ public class UpdateEmployeeServlet extends HttpServlet {
             request.setAttribute("errorMessage", "An error occurred while updating the employee: " + e.getMessage());
             String userIdParam = request.getParameter("userId");
             if (userIdParam != null) {
-                request.getRequestDispatcher("/Views/UpdateEmployeeDetails.jsp?userId=" + userIdParam).forward(request, response);
+                request.getRequestDispatcher("/Views/Profile.jsp?userId=" + userIdParam).forward(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/Views/ManageEmployees.jsp");
             }

@@ -1,6 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!-- Directive Tags -->
 <%@ include file="Sidebar.jsp" %>
+<%@ page import="com.myapp.dao.ItemDAO, com.myapp.dao.CustomerDAO, com.myapp.dao.UserDAO" %>
+<%
+    ItemDAO itemDAO = new ItemDAO();
+    CustomerDAO customerDAO = new CustomerDAO();
+    UserDAO userDAO = new UserDAO();
+
+    int itemCount = itemDAO.getItemCount();
+    int customerCount = customerDAO.getCustomerCount();
+    int userCount = userDAO.getUserCount();
+%>
 
 <!DOCTYPE html>
 <html>
@@ -18,7 +28,7 @@
 	.content {
 	  padding: 2rem;
 	}
-	main .row .col-md-3 .card{
+	main .row .col-md-4 .card{
 	  background-color: rgba(221, 74, 72, 0.7);
 	  color: #ffffff;
 	  border: none;
@@ -26,7 +36,7 @@
 	  transition: transform 0.2s ease, box-shadow 0.2s ease;
 	  cursor: pointer;
 	}
-	main .row .col-md-3 .card:hover {
+	main .row .col-md-4 .card:hover {
 	  transform: translateY(-7px);
 	  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); 
 	}
@@ -41,7 +51,6 @@
 	<div class="container-fluid">
 	  <div class="row">
 
-	    
 
 	    <!-- Main Content -->
 	    <main class="content" style="margin-left: 90px; width: calc(100% - 90px);">
@@ -55,7 +64,7 @@
 	        <div class="ps-3 rounded-3 welcome-box" style="background-color: rgba(249, 155, 125, 0.7); margin-top: 100px;">
 			  <div class="row align-items-center">
 			    <div class="col-md-6 mb-3 mb-md-0">
-			      <h1 class="h2">Welcome back, Admin!</h1>
+			      <h1 class="h2">Welcome back, Inventory Managerr!</h1>
 			      <p class="text-muted">
 			        Here’s a quick overview of your system performance and recent activity.<br>
 			        Use the sidebar to manage customers, items, and billing efficiently.
@@ -73,51 +82,48 @@
 
 	      <!-- Cards Row -->
 	      <div class="row">
-	        <div class="col-md-3 mb-4 mt-5">
+	        <div class="col-md-4 mb-4 mt-5">
 	          <div class="card">
 	            <div class="card-body">
-	              <h6 class="card-title">Earnings (Monthly)</h6>
-	              <h4>$4,390</h4>
-	              <p class="text-success">▲ 12%</p>
+	              <h6 class="card-title">Items Available</h6>
+	              <h4><%= itemCount %></h4>
 	            </div>
 	          </div>
 	        </div>
-	        <div class="col-md-3 mb-4 mt-5">
+	        <div class="col-md-4 mb-4 mt-5">
 	          <div class="card">
 	            <div class="card-body">
-	              <h6 class="card-title">Average Sale Price</h6>
-	              <h4>$27.00</h4>
-	              <p class="text-danger">▼ 3%</p>
+	              <h6 class="card-title">Total No. of Customers</h6>
+	              <h4><%= customerCount %></h4>
 	            </div>
 	          </div>
 	        </div>
-	        <div class="col-md-3 mb-4 mt-5">
+	        <div class="col-md-4 mb-4 mt-5">
 	          <div class="card">
 	            <div class="card-body">
-	              <h6 class="card-title">Clicks</h6>
-	              <h4>11,291</h4>
-	              <p class="text-success">▲ 12%</p>
+	              <h6 class="card-title">Total No. of Users</h6>
+	              <h4><%= userCount %></h4>
 	            </div>
 	          </div>
 	        </div>
-	        <div class="col-md-3 mb-4 mt-5">
+	        <!-- <div class="col-md-3 mb-4 mt-5">
 	          <div class="card">
 	            <div class="card-body">
 	              <h6 class="card-title">Conversion Rate</h6>
 	              <h4>1.23%</h4>
-	              <p class="text-danger">▼ 1%</p>
 	            </div>
 	          </div>
-	        </div>
+	        </div> -->
 	      </div>
 
-	      <!-- Placeholder Section -->
+	      <!-- Placeholder Section 
 	      <div class="card mt-4 shadow-sm">
 	        <div class="card-body">
 	          <h5 class="card-title">Report Generation</h5>
 	          <p class="card-text">Ready to get started? You can start building your reports using this panel.</p>
-	        </div>
-	      </div>
+	        </div> 
+	      </div> -->
+	      
 	    </main>
 	  </div>
 	</div>

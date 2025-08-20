@@ -17,13 +17,13 @@ import com.myapp.model.ItemBean;
 
 @WebServlet("/UpdateItemServlet")
 @MultipartConfig(
-	    fileSizeThreshold = 1024 * 1024,
-	    maxFileSize = 5 * 1024 * 1024,
-	    maxRequestSize = 10 * 1024 * 1024
-	)
+    fileSizeThreshold = 1024 * 1024,
+    maxFileSize = 5 * 1024 * 1024,
+    maxRequestSize = 10 * 1024 * 1024
+)
 public class UpdateItemServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	
+	private static final String UPLOAD_DIR = "uploaded_images";
     
     public UpdateItemServlet() {
         super();

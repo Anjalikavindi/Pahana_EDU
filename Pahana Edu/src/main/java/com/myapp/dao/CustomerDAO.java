@@ -11,7 +11,7 @@ public class CustomerDAO {
 	// Get all customers
     public List<CustomerBean> getAllCustomers() {
         List<CustomerBean> customers = new ArrayList<>();
-        String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers";
+        String sql = "SELECT customer_id,account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -19,6 +19,7 @@ public class CustomerDAO {
             
             while (rs.next()) {
                 CustomerBean customer = new CustomerBean();
+                customer.setCustomerId(rs.getInt("customer_id"));
                 customer.setAccountNumber(rs.getString("account_number"));
                 customer.setFirstName(rs.getString("first_name"));
                 customer.setLastName(rs.getString("last_name"));
@@ -39,7 +40,7 @@ public class CustomerDAO {
     
     // Get customer by account number
     public CustomerBean getCustomerByAccountNumber(String accountNumber) {
-        String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers WHERE account_number = ?";
+        String sql = "SELECT  customer_id,account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers WHERE account_number = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -49,6 +50,7 @@ public class CustomerDAO {
             
             if (rs.next()) {
                 CustomerBean customer = new CustomerBean();
+                customer.setCustomerId(rs.getInt("customer_id"));
                 customer.setAccountNumber(rs.getString("account_number"));
                 customer.setFirstName(rs.getString("first_name"));
                 customer.setLastName(rs.getString("last_name"));
@@ -69,7 +71,7 @@ public class CustomerDAO {
     
     //Get customer by email address
     public CustomerBean getCustomerByEmail(String email) {
-        String sql = "SELECT account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers WHERE email = ?";
+        String sql = "SELECT customer_id, account_number, first_name, last_name, email, contact_number, address, remaining_units, created_by, created_at FROM customers WHERE email = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -79,6 +81,7 @@ public class CustomerDAO {
             
             if (rs.next()) {
                 CustomerBean customer = new CustomerBean();
+                customer.setCustomerId(rs.getInt("customer_id"));
                 customer.setAccountNumber(rs.getString("account_number"));
                 customer.setFirstName(rs.getString("first_name"));
                 customer.setLastName(rs.getString("last_name"));
@@ -96,6 +99,23 @@ public class CustomerDAO {
         
         return null;
     }
+    
+    
+    // Get total customers count for dashboard card
+    public int getCustomerCount() {
+        String sql = "SELECT COUNT(*) AS total FROM customers";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     
     
     // Add new customer
