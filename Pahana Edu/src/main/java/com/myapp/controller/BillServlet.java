@@ -42,7 +42,7 @@ public class BillServlet extends HttpServlet {
     public void init() {
         customerDAO = new CustomerDAO();
         itemDAO = new ItemDAO();
-    }
+	}
        
     public BillServlet() {
         super();
