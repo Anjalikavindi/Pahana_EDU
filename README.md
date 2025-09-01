@@ -74,7 +74,7 @@ The application is built on a modular, MVC architecture that handles a wide rang
 ### User Actions:
 
 - Login: Users authenticate with their credentials.
-- Logout: Ends the user session securely.
+- Logout: Ends the user session securely. The logout also clears cache headers, so that the user cannot navigate back to the restricted pages after logout.
 - Manage Employees: Admins can add new users, update details of the existing ones, activate/deactivate accounts and delete accounts.
 
 ### Customer Actions:
