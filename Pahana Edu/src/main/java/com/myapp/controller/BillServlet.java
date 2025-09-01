@@ -14,8 +14,6 @@ import java.util.List;
 import java.io.ByteArrayOutputStream;
 import javax.mail.*;
 import javax.mail.internet.*;
-import javax.mail.util.ByteArrayDataSource;
-import javax.activation.*;
 
 import com.myapp.model.BillItemBean;
 import com.myapp.dao.BillDAO;
@@ -149,9 +147,10 @@ public class BillServlet extends HttpServlet {
 
             ByteArrayOutputStream baos = generatePDF(customer, cashierName, items, quantities, prices, totals, subtotal, grandTotal, amountPaid, loyaltyPointsUsed, earnedPoints, balance);
 
-            // Send email (but don't block the response if it fails)
+            // Send email with bill details (but don't block the response if it fails)
             try {
-                sendEmailWithAttachment(customer.getEmail(), "Your Invoice", "Please find attached your invoice.", baos.toByteArray());
+                String billDetailsEmail = generateBillDetailsEmail(customer, cashierName, items, quantities, prices, totals, subtotal, grandTotal, amountPaid, loyaltyPointsUsed, earnedPoints, balance);
+                sendEmail(customer.getEmail(), "Your Invoice Details", billDetailsEmail);
             } catch (Exception emailException) {
                 System.err.println("Failed to send email: " + emailException.getMessage());
                 // Continue with PDF download even if email fails
@@ -287,7 +286,76 @@ public class BillServlet extends HttpServlet {
         return baos;
     }
 
-    private void sendEmailWithAttachment(String toEmail, String subject, String body, byte[] pdfBytes) throws Exception {
+    private String generateBillDetailsEmail(CustomerBean customer, String cashierName, String[] items, String[] quantities, String[] prices, String[] totals,
+                                          double subtotal, double grandTotal, double amountPaid, double loyaltyPointsUsed, int loyaltyPointsEarned, double balance) {
+        StringBuilder emailBody = new StringBuilder();
+        
+        // Email header with HTML formatting
+        emailBody.append("<!DOCTYPE html>");
+        emailBody.append("<html><head><style>");
+        emailBody.append("body { font-family: Arial, sans-serif; margin: 20px; }");
+        emailBody.append("h2 { color: #333; text-align: center; }");
+        emailBody.append("table { border-collapse: collapse; width: 100%; margin: 20px 0; }");
+        emailBody.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
+        emailBody.append("th { background-color: #f2f2f2; }");
+        emailBody.append(".total-section { margin-top: 20px; }");
+        emailBody.append(".thank-you { text-align: center; font-style: italic; margin-top: 30px; }");
+        emailBody.append("</style></head><body>");
+        
+        emailBody.append("<h2>Invoice Details</h2>");
+        
+        // Customer information
+        emailBody.append("<h3>Customer Information:</h3>");
+        emailBody.append("<p><strong>Name:</strong> ").append(customer.getFirstName()).append(" ").append(customer.getLastName()).append("</p>");
+        emailBody.append("<p><strong>Account No:</strong> ").append(customer.getAccountNumber()).append("</p>");
+        emailBody.append("<p><strong>Email:</strong> ").append(customer.getEmail()).append("</p>");
+        emailBody.append("<p><strong>Contact:</strong> ").append(customer.getContactNumber()).append("</p>");
+        
+        // Date and cashier
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        String currentDate = dtf.format(LocalDateTime.now());
+        emailBody.append("<p><strong>Date:</strong> ").append(currentDate).append("</p>");
+        emailBody.append("<p><strong>Cashier:</strong> ").append(cashierName).append("</p>");
+        
+        // Items table
+        emailBody.append("<h3>Items Purchased:</h3>");
+        emailBody.append("<table>");
+        emailBody.append("<tr><th>Item</th><th>Quantity</th><th>Unit Price (Rs.)</th><th>Total (Rs.)</th></tr>");
+        
+        if (items != null && quantities != null && prices != null && totals != null) {
+            for (int i = 0; i < items.length; i++) {
+                if (items[i] != null && !items[i].isEmpty() && parseInt(quantities[i]) > 0) {
+                    emailBody.append("<tr>");
+                    emailBody.append("<td>").append(items[i]).append("</td>");
+                    emailBody.append("<td>").append(quantities[i]).append("</td>");
+                    emailBody.append("<td>").append(prices[i]).append("</td>");
+                    emailBody.append("<td>").append(totals[i]).append("</td>");
+                    emailBody.append("</tr>");
+                }
+            }
+        }
+        emailBody.append("</table>");
+        
+        // Totals section
+        emailBody.append("<div class='total-section'>");
+        emailBody.append("<h3>Payment Summary:</h3>");
+        emailBody.append("<p><strong>Subtotal:</strong> Rs. ").append(String.format("%.2f", subtotal)).append("</p>");
+        emailBody.append("<p><strong>Grand Total:</strong> Rs. ").append(String.format("%.2f", grandTotal)).append("</p>");
+        emailBody.append("<p><strong>Amount Paid:</strong> Rs. ").append(String.format("%.2f", amountPaid)).append("</p>");
+        emailBody.append("<p><strong>Loyalty Points Used:</strong> ").append(String.format("%.0f", loyaltyPointsUsed)).append("</p>");
+        emailBody.append("<p><strong>Loyalty Points Earned:</strong> ").append(loyaltyPointsEarned).append("</p>");
+        emailBody.append("<p><strong>Balance:</strong> Rs. ").append(String.format("%.2f", balance)).append("</p>");
+        emailBody.append("</div>");
+        
+        // Thank you message
+        emailBody.append("<p class='thank-you'>Thank you for your purchase. Please come again!</p>");
+        
+        emailBody.append("</body></html>");
+        
+        return emailBody.toString();
+    }
+
+    private void sendEmail(String toEmail, String subject, String htmlBody) throws Exception {
         final String fromEmail = "anjalikakavindi21@gmail.com";
         final String password = "mmzc zuib xjes yfjj";
 
@@ -310,20 +378,10 @@ public class BillServlet extends HttpServlet {
         message.setFrom(new InternetAddress(fromEmail));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
         message.setSubject(subject);
-
-        MimeBodyPart textPart = new MimeBodyPart();
-        textPart.setText(body);
-
-        MimeBodyPart attachmentPart = new MimeBodyPart();
-        DataSource source = new ByteArrayDataSource(pdfBytes, "application/pdf");
-        attachmentPart.setDataHandler(new DataHandler(source));
-        attachmentPart.setFileName("Invoice.pdf");
-
-        Multipart multipart = new MimeMultipart();
-        multipart.addBodyPart(textPart);
-        multipart.addBodyPart(attachmentPart);
-
-        message.setContent(multipart);
+        
+        // Set content as HTML
+        message.setContent(htmlBody, "text/html; charset=utf-8");
+        
         Transport.send(message);
     }
 

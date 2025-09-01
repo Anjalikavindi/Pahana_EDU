@@ -64,7 +64,16 @@
 	        <div class="ps-3 rounded-3 welcome-box" style="background-color: rgba(249, 155, 125, 0.7); margin-top: 100px;">
 			  <div class="row align-items-center">
 			    <div class="col-md-6 mb-3 mb-md-0">
-			      <h1 class="h2">Welcome back, Inventory Managerr!</h1>
+			      <h1 class="h2">Welcome back, 
+			      <%
+			            HttpSession userSession = request.getSession(false);
+			            if (userSession != null && userSession.getAttribute("loggedInUser") != null) {
+			              com.myapp.model.UserBean user = (com.myapp.model.UserBean) userSession.getAttribute("loggedInUser");
+			              out.print(user.getUsername() != null ? user.getUsername() : "User");
+			            } else {
+			              out.print("Admin");
+			            }
+			        %>!</h1>
 			      <p class="text-muted">
 			        Here’s a quick overview of your system performance and recent activity.<br>
 			        Use the sidebar to manage customers, items, and billing efficiently.

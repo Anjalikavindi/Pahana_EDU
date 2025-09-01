@@ -100,7 +100,7 @@ private static Properties dbProperties = null;
         return dbProperties.getProperty("db.name", "pahana_edu");
     }
     
-    // Method to reload properties (useful for configuration changes)
+    // Method to reload properties 
     public static void reloadProperties() {
         loadDatabaseProperties();
     }

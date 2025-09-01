@@ -311,7 +311,7 @@
 	    const price = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.price;
 	    const image = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.image;
 	    const itemId = this.closest(".card-icons").querySelector(".delete-circle").dataset.itemId;
-	    const description = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.description; // ✅ Added
+	    const description = this.closest(".card-icons").querySelector(".viewItemBtn").dataset.description; 
 
 	    // Change 'id' to 'itemId' to match the servlet's expectation
 	    const params = new URLSearchParams({ itemId: itemId, name, price, quantity, image, description });
@@ -326,6 +326,7 @@
 	      .catch(err => console.error("Failed to load edit modal:", err));
 	  });
 	});
+
 
   
 	//Submit edit item form

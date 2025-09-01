@@ -189,7 +189,7 @@
                   <th>Name</th>
                   <th>Address</th>
                   <th>Contact</th>
-                  <th>Remaining Units</th>
+                  <th>Loyalty Points</th>
                   <th>Actions</th>
                 </tr>
               </thead>
